@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo/providers/task_provider.dart';
+import 'package:todo/services/prefs_task_storage.dart';
 
 import 'package:todo/screens/task_home_screen.dart';
 
@@ -26,7 +27,7 @@ Future<void> pumpApp(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({'tasks': jsonEncode(_seedTasks)});
   await tester.pumpWidget(
     ChangeNotifierProvider(
-      create: (_) => TaskProvider(),
+      create: (_) => TaskProvider(storage: PrefsTaskStorage()),
       child: const TaskFlowApp(),
     ),
   );
@@ -124,7 +125,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Delete this task?'), findsOneWidget);
-    expect(find.text('This action cannot be undone.'), findsOneWidget);
+    expect(
+      find.text('You can undo this right after deleting.'),
+      findsOneWidget,
+    );
     expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
 
     await tester.tap(find.text('Cancel'));
@@ -137,5 +141,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Plan the day'), findsNothing);
+  });
+
+  testWidgets('can search tasks', (WidgetTester tester) async {
+    await pumpApp(tester);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Search tasks'),
+      'dash',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Design the dashboard'), findsOneWidget);
+    expect(find.text('Plan the day'), findsNothing);
+  });
+
+  testWidgets('can undo a deletion', (WidgetTester tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plan the day'), findsNothing);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plan the day'), findsOneWidget);
   });
 }

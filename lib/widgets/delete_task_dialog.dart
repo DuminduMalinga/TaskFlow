@@ -59,7 +59,7 @@ class DeleteTaskDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'This action cannot be undone.',
+              'You can undo this right after deleting.',
               textAlign: TextAlign.center,
               style: TextStyle(color: muted, fontSize: 14, height: 1.4),
             ),

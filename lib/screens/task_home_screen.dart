@@ -40,6 +40,16 @@ class TaskFlowApp extends StatelessWidget {
 
 enum TaskFilter { all, active, completed }
 
+enum TaskSort {
+  newest('Newest first'),
+  dueDate('Due date'),
+  title('Title A–Z');
+
+  const TaskSort(this.label);
+
+  final String label;
+}
+
 class TaskHomePage extends StatefulWidget {
   const TaskHomePage({super.key});
 
@@ -49,6 +59,8 @@ class TaskHomePage extends StatefulWidget {
 
 class _TaskHomePageState extends State<TaskHomePage> {
   TaskFilter _filter = TaskFilter.all;
+  TaskSort _sort = TaskSort.newest;
+  String _query = '';
 
   // Only read from build(), so watching keeps the UI in sync.
   List<Task> get _tasks => context.watch<TaskProvider>().tasks;
@@ -56,14 +68,36 @@ class _TaskHomePageState extends State<TaskHomePage> {
   int get _completedCount => _tasks.where((task) => task.isCompleted).length;
 
   List<Task> get _visibleTasks {
-    switch (_filter) {
-      case TaskFilter.active:
-        return _tasks.where((task) => !task.isCompleted).toList();
-      case TaskFilter.completed:
-        return _tasks.where((task) => task.isCompleted).toList();
-      case TaskFilter.all:
-        return _tasks;
+    final query = _query.trim().toLowerCase();
+    final tasks = _tasks.where((task) {
+      final matchesFilter = switch (_filter) {
+        TaskFilter.active => !task.isCompleted,
+        TaskFilter.completed => task.isCompleted,
+        TaskFilter.all => true,
+      };
+      return matchesFilter &&
+          (query.isEmpty ||
+              task.title.toLowerCase().contains(query) ||
+              task.description.toLowerCase().contains(query));
+    }).toList();
+
+    switch (_sort) {
+      case TaskSort.newest:
+        break;
+      case TaskSort.dueDate:
+        // Tasks without a due date go last.
+        tasks.sort((a, b) {
+          if (a.dueDate == null && b.dueDate == null) return 0;
+          if (a.dueDate == null) return 1;
+          if (b.dueDate == null) return -1;
+          return a.dueDate!.compareTo(b.dueDate!);
+        });
+      case TaskSort.title:
+        tasks.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
     }
+    return tasks;
   }
 
   String get _dateLabel {
@@ -132,9 +166,21 @@ class _TaskHomePageState extends State<TaskHomePage> {
 
   Future<void> _deleteTask(Task task) async {
     final shouldDelete = await DeleteTaskDialog.show(context);
-    if (shouldDelete == true && mounted) {
-      context.read<TaskProvider>().deleteTask(task);
-    }
+    if (shouldDelete != true || !mounted) return;
+    final provider = context.read<TaskProvider>();
+    final index = provider.deleteTask(task);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Task deleted'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => provider.restoreTask(task, index),
+          ),
+        ),
+      );
   }
 
   @override
@@ -184,6 +230,16 @@ class _TaskHomePageState extends State<TaskHomePage> {
               ),
             ),
             SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _SearchSortBar(
+                  sort: _sort,
+                  onQueryChanged: (value) => setState(() => _query = value),
+                  onSortChanged: (value) => setState(() => _sort = value),
+                ),
+              ),
+            ),
+            SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
               sliver: _visibleTasks.isEmpty
                   ? const SliverToBoxAdapter(child: _EmptyState())
@@ -213,6 +269,49 @@ class _TaskHomePageState extends State<TaskHomePage> {
         tooltip: 'Add task',
         child: const Icon(Icons.add_rounded, size: 30),
       ),
+    );
+  }
+}
+
+class _SearchSortBar extends StatelessWidget {
+  const _SearchSortBar({
+    required this.sort,
+    required this.onQueryChanged,
+    required this.onSortChanged,
+  });
+
+  final TaskSort sort;
+  final ValueChanged<String> onQueryChanged;
+  final ValueChanged<TaskSort> onSortChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            onChanged: onQueryChanged,
+            textInputAction: TextInputAction.search,
+            decoration: const InputDecoration(
+              hintText: 'Search tasks',
+              prefixIcon: Icon(Icons.search_rounded),
+              isDense: true,
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+        ),
+        PopupMenuButton<TaskSort>(
+          tooltip: 'Sort tasks',
+          icon: const Icon(Icons.sort_rounded, color: navy),
+          initialValue: sort,
+          onSelected: onSortChanged,
+          itemBuilder: (_) => [
+            for (final option in TaskSort.values)
+              PopupMenuItem(value: option, child: Text(option.label)),
+          ],
+        ),
+      ],
     );
   }
 }

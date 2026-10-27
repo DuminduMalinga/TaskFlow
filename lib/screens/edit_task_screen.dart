@@ -137,6 +137,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   autofocus: true,
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.next,
+                  maxLength: 80,
                   decoration: const InputDecoration(
                     hintText: 'Enter a task title',
                   ),
@@ -152,7 +153,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
                   maxLines: 5,
-                  minLines: 4,
+                  minLines: 1,
                   decoration: const InputDecoration(
                     hintText: 'Add details to help you complete this task',
                     alignLabelWithHint: true,

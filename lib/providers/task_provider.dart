@@ -63,8 +63,16 @@ class TaskProvider extends ChangeNotifier {
     _commit();
   }
 
-  void deleteTask(Task task) {
+  /// Removes [task] and returns its position so it can be restored.
+  int deleteTask(Task task) {
+    final index = _tasks.indexOf(task);
     _tasks.remove(task);
+    _commit();
+    return index;
+  }
+
+  void restoreTask(Task task, int index) {
+    _tasks.insert(index.clamp(0, _tasks.length), task);
     _commit();
   }
 }
