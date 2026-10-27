@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'providers/task_provider.dart';
 import 'screens/task_home_screen.dart';
 
 void main() {
-  runApp(const TaskFlowApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => TaskProvider(),
+      child: const TaskFlowApp(),
+    ),
+  );
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'add_task_screen.dart';
 import 'completed_tasks_screen.dart';
 import 'edit_task_screen.dart';
 import '../models/task.dart';
+import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/delete_task_dialog.dart';
 
@@ -46,29 +48,10 @@ class TaskHomePage extends StatefulWidget {
 }
 
 class _TaskHomePageState extends State<TaskHomePage> {
-  final List<Task> _tasks = [
-    Task(
-      title: 'Plan the day',
-      description: 'Review priorities and set your focus',
-      isCompleted: true,
-    ),
-    Task(
-      title: 'Design the dashboard',
-      description: 'Create a clean layout for the analytics page',
-    ),
-    Task(
-      title: 'Team stand-up meeting',
-      description: 'Share progress and discuss blockers',
-      isCompleted: true,
-    ),
-    Task(title: 'Read 20 pages', description: 'Continue reading Atomic Habits'),
-    Task(
-      title: 'Prepare presentation',
-      description: 'Polish the slides for tomorrow’s review',
-    ),
-  ];
-
   TaskFilter _filter = TaskFilter.all;
+
+  // Only read from build(), so watching keeps the UI in sync.
+  List<Task> get _tasks => context.watch<TaskProvider>().tasks;
 
   int get _completedCount => _tasks.where((task) => task.isCompleted).length;
 
@@ -111,10 +94,6 @@ class _TaskHomePageState extends State<TaskHomePage> {
     return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
   }
 
-  void _toggleTask(Task task) {
-    setState(() => task.isCompleted = !task.isCompleted);
-  }
-
   Future<void> _openTaskEditor({Task? task}) async {
     if (task == null) {
       final result = await Navigator.push<AddTaskResult>(
@@ -122,16 +101,11 @@ class _TaskHomePageState extends State<TaskHomePage> {
         MaterialPageRoute(builder: (_) => const AddTaskScreen()),
       );
       if (!mounted || result == null) return;
-      setState(() {
-        _tasks.insert(
-          0,
-          Task(
-            title: result.title,
-            description: result.description,
-            dueDate: result.dueDate,
-          ),
-        );
-      });
+      context.read<TaskProvider>().addTask(
+        title: result.title,
+        description: result.description,
+        dueDate: result.dueDate,
+      );
       return;
     }
 
@@ -140,22 +114,18 @@ class _TaskHomePageState extends State<TaskHomePage> {
       MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
     );
     if (!mounted || result == null) return;
-    setState(() {
-      task.title = result.title;
-      task.description = result.description;
-      task.dueDate = result.dueDate;
-    });
+    context.read<TaskProvider>().updateTask(
+      task,
+      title: result.title,
+      description: result.description,
+      dueDate: result.dueDate,
+    );
   }
 
   Future<void> _openCompletedTasks() async {
     await Navigator.push<void>(
       context,
-      MaterialPageRoute(
-        builder: (_) => CompletedTasksScreen(
-          tasks: _tasks.where((task) => task.isCompleted).toList(),
-          onTaskReactivated: (task) => setState(() => task.isCompleted = false),
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => const CompletedTasksScreen()),
     );
     if (mounted) setState(() => _filter = TaskFilter.all);
   }
@@ -163,7 +133,7 @@ class _TaskHomePageState extends State<TaskHomePage> {
   Future<void> _deleteTask(Task task) async {
     final shouldDelete = await DeleteTaskDialog.show(context);
     if (shouldDelete == true && mounted) {
-      setState(() => _tasks.remove(task));
+      context.read<TaskProvider>().deleteTask(task);
     }
   }
 
@@ -223,7 +193,8 @@ class _TaskHomePageState extends State<TaskHomePage> {
                         final task = _visibleTasks[index];
                         return TaskCard(
                           task: task,
-                          onToggle: () => _toggleTask(task),
+                          onToggle: () =>
+                              context.read<TaskProvider>().toggleTask(task),
                           onEdit: () => _openTaskEditor(task: task),
                           onDelete: () => _deleteTask(task),
                         );

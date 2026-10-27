@@ -1,34 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/task.dart';
+import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
 
-class CompletedTasksScreen extends StatefulWidget {
-  const CompletedTasksScreen({
-    required this.tasks,
-    required this.onTaskReactivated,
-    super.key,
-  });
+class CompletedTasksScreen extends StatelessWidget {
+  const CompletedTasksScreen({super.key});
 
-  final List<Task> tasks;
-  final ValueChanged<Task> onTaskReactivated;
-
-  @override
-  State<CompletedTasksScreen> createState() => _CompletedTasksScreenState();
-}
-
-class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
-  late final List<Task> _completedTasks;
-
-  @override
-  void initState() {
-    super.initState();
-    _completedTasks = List<Task>.from(widget.tasks);
-  }
-
-  void _reactivate(Task task) {
-    widget.onTaskReactivated(task);
-    setState(() => _completedTasks.remove(task));
+  void _reactivate(BuildContext context, Task task) {
+    context.read<TaskProvider>().toggleTask(task);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Task moved back to active'),
@@ -39,6 +20,7 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final completedTasks = context.watch<TaskProvider>().completedTasks;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -54,19 +36,19 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
         ),
       ),
       body: SafeArea(
-        child: _completedTasks.isEmpty
+        child: completedTasks.isEmpty
             ? const _CompletedEmptyState()
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                itemCount: _completedTasks.length + 1,
+                itemCount: completedTasks.length + 1,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return _CompletedSummary(count: _completedTasks.length);
+                    return _CompletedSummary(count: completedTasks.length);
                   }
-                  final task = _completedTasks[index - 1];
+                  final task = completedTasks[index - 1];
                   return _CompletedTaskCard(
                     task: task,
-                    onReactivate: () => _reactivate(task),
+                    onReactivate: () => _reactivate(context, task),
                   );
                 },
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
