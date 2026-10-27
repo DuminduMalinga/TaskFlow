@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'add_task_screen.dart';
+import 'completed_tasks_screen.dart';
 import 'edit_task_screen.dart';
+import '../models/task.dart';
 import '../theme/app_colors.dart';
+import '../widgets/delete_task_dialog.dart';
 
 class TaskFlowApp extends StatelessWidget {
   const TaskFlowApp({super.key});
@@ -31,20 +34,6 @@ class TaskFlowApp extends StatelessWidget {
       home: const TaskHomePage(),
     );
   }
-}
-
-class Task {
-  Task({
-    required this.title,
-    required this.description,
-    this.dueDate,
-    this.isCompleted = false,
-  });
-
-  String title;
-  String description;
-  DateTime? dueDate;
-  bool isCompleted;
 }
 
 enum TaskFilter { all, active, completed }
@@ -145,6 +134,7 @@ class _TaskHomePageState extends State<TaskHomePage> {
       });
       return;
     }
+
     final result = await Navigator.push<EditTaskResult>(
       context,
       MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
@@ -157,25 +147,21 @@ class _TaskHomePageState extends State<TaskHomePage> {
     });
   }
 
-  Future<void> _deleteTask(Task task) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: const Text('This task will be removed from your list.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: navy),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
+  Future<void> _openCompletedTasks() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CompletedTasksScreen(
+          tasks: _tasks.where((task) => task.isCompleted).toList(),
+          onTaskReactivated: (task) => setState(() => task.isCompleted = false),
+        ),
       ),
     );
+    if (mounted) setState(() => _filter = TaskFilter.all);
+  }
+
+  Future<void> _deleteTask(Task task) async {
+    final shouldDelete = await DeleteTaskDialog.show(context);
     if (shouldDelete == true && mounted) {
       setState(() => _tasks.remove(task));
     }
@@ -217,7 +203,13 @@ class _TaskHomePageState extends State<TaskHomePage> {
               sliver: SliverToBoxAdapter(
                 child: FilterTabs(
                   selected: _filter,
-                  onSelected: (filter) => setState(() => _filter = filter),
+                  onSelected: (filter) {
+                    if (filter == TaskFilter.completed) {
+                      _openCompletedTasks();
+                    } else {
+                      setState(() => _filter = filter);
+                    }
+                  },
                 ),
               ),
             ),

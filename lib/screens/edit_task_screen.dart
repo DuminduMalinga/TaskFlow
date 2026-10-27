@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../models/task.dart';
 import '../theme/app_colors.dart';
-import 'task_home_screen.dart';
 
 class EditTaskResult {
   const EditTaskResult({

@@ -68,4 +68,44 @@ void main() {
 
     expect(find.text('Plan the week'), findsOneWidget);
   });
+
+  testWidgets('can open completed tasks and reactivate a task', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const TaskFlowApp());
+    await tester.tap(find.text('Completed').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Completed Tasks'), findsOneWidget);
+    expect(find.text('2 tasks completed'), findsOneWidget);
+    expect(find.text('Plan the day'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Mark task active').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 task completed'), findsOneWidget);
+  });
+
+  testWidgets('can cancel and confirm task deletion', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const TaskFlowApp());
+    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete this task?'), findsOneWidget);
+    expect(find.text('This action cannot be undone.'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plan the day'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Plan the day'), findsNothing);
+  });
 }
