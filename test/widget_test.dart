@@ -44,4 +44,28 @@ void main() {
 
     expect(find.text('Call the dentist'), findsOneWidget);
   });
+
+  testWidgets('can open and save the edit task screen', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const TaskFlowApp());
+    await tester.tap(find.byTooltip('Edit task').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Task'), findsOneWidget);
+    expect(
+      find.text('Update the details of your existing task.'),
+      findsOneWidget,
+    );
+    expect(find.text('Plan the day'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Enter a task title'),
+      'Plan the week',
+    );
+    await tester.tap(find.text('Save Changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Plan the week'), findsOneWidget);
+  });
 }

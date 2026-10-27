@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'add_task_screen.dart';
+import 'edit_task_screen.dart';
 import '../theme/app_colors.dart';
 
 class TaskFlowApp extends StatelessWidget {
@@ -144,16 +145,15 @@ class _TaskHomePageState extends State<TaskHomePage> {
       });
       return;
     }
-    final result = await showModalBottomSheet<Task>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => TaskEditorSheet(task: task),
+    final result = await Navigator.push<EditTaskResult>(
+      context,
+      MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
     );
     if (!mounted || result == null) return;
     setState(() {
       task.title = result.title;
       task.description = result.description;
+      task.dueDate = result.dueDate;
     });
   }
 
