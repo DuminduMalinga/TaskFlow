@@ -29,14 +29,17 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'What needs to be done?'),
+      find.widgetWithText(TextFormField, 'e.g. Plan the team meeting'),
       'Call the dentist',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Add a little more detail'),
+      find.widgetWithText(
+        TextFormField,
+        'Add details to help you complete this task',
+      ),
       'Book an appointment',
     );
-    await tester.tap(find.text('Add task'));
+    await tester.tap(find.text('Create Task'));
     await tester.pumpAndSettle();
 
     expect(find.text('Call the dentist'), findsOneWidget);

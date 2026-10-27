@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
-const navy = Color(0xFF172554);
-const blue = Color(0xFF3B82F6);
-const background = Color(0xFFF7F8FC);
-const border = Color(0xFFE7EAF1);
-const muted = Color(0xFF667085);
+import 'add_task_screen.dart';
+import '../theme/app_colors.dart';
 
 class TaskFlowApp extends StatelessWidget {
   const TaskFlowApp({super.key});
@@ -39,11 +36,13 @@ class Task {
   Task({
     required this.title,
     required this.description,
+    this.dueDate,
     this.isCompleted = false,
   });
 
   String title;
   String description;
+  DateTime? dueDate;
   bool isCompleted;
 }
 
@@ -127,6 +126,24 @@ class _TaskHomePageState extends State<TaskHomePage> {
   }
 
   Future<void> _openTaskEditor({Task? task}) async {
+    if (task == null) {
+      final result = await Navigator.push<AddTaskResult>(
+        context,
+        MaterialPageRoute(builder: (_) => const AddTaskScreen()),
+      );
+      if (!mounted || result == null) return;
+      setState(() {
+        _tasks.insert(
+          0,
+          Task(
+            title: result.title,
+            description: result.description,
+            dueDate: result.dueDate,
+          ),
+        );
+      });
+      return;
+    }
     final result = await showModalBottomSheet<Task>(
       context: context,
       isScrollControlled: true,
@@ -135,12 +152,8 @@ class _TaskHomePageState extends State<TaskHomePage> {
     );
     if (!mounted || result == null) return;
     setState(() {
-      if (task == null) {
-        _tasks.insert(0, result);
-      } else {
-        task.title = result.title;
-        task.description = result.description;
-      }
+      task.title = result.title;
+      task.description = result.description;
     });
   }
 
