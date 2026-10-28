@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo/providers/profile_provider.dart';
 import 'package:todo/providers/task_provider.dart';
 import 'package:todo/services/prefs_task_storage.dart';
 
@@ -24,13 +25,29 @@ const _seedTasks = [
 ];
 
 Future<void> pumpApp(WidgetTester tester) async {
+  // A phone-sized, taller screen so every task card is on screen.
+  tester.view.physicalSize = const Size(800, 1800);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues({'tasks': jsonEncode(_seedTasks)});
   await tester.pumpWidget(
-    ChangeNotifierProvider(
-      create: (_) => TaskProvider(storage: PrefsTaskStorage()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => TaskProvider(storage: PrefsTaskStorage()),
+        ),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+      ],
       child: const TaskFlowApp(),
     ),
   );
+  await tester.pumpAndSettle();
+}
+
+Future<void> pickDate(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();
 }
 
@@ -70,6 +87,7 @@ void main() {
       ),
       'Book an appointment',
     );
+    await pickDate(tester);
     await tester.tap(find.text('Create Task'));
     await tester.pumpAndSettle();
 
@@ -94,6 +112,7 @@ void main() {
       find.widgetWithText(TextFormField, 'Enter a task title'),
       'Plan the week',
     );
+    await pickDate(tester);
     await tester.tap(find.text('Save Changes'));
     await tester.pumpAndSettle();
 
@@ -166,5 +185,65 @@ void main() {
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(find.text('Plan the day'), findsOneWidget);
+  });
+
+  testWidgets('requires a due date to create a task', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('Add task'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'e.g. Plan the team meeting'),
+      'No date task',
+    );
+    await tester.tap(find.text('Create Task'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Choose a due date'), findsOneWidget);
+    expect(find.text('Add New Task'), findsOneWidget);
+  });
+
+  testWidgets('can update the profile', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('profile-avatar')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Alex'),
+      'Sam Lee',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '+94 77 123 4567'),
+      '0771234567',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'name@example.com'),
+      'sam@example.com',
+    );
+    await tester.tap(find.text('Save Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good morning, Sam'), findsOneWidget);
+  });
+
+  testWidgets('validates profile fields', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('profile-avatar')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Alex'), '');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '+94 77 123 4567'),
+      '12',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'name@example.com'),
+      'nope',
+    );
+    await tester.tap(find.text('Save Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Enter your name'), findsOneWidget);
+    expect(find.text('Enter a valid mobile number'), findsOneWidget);
+    expect(find.text('Enter a valid email address'), findsOneWidget);
   });
 }

@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'add_task_screen.dart';
 import 'completed_tasks_screen.dart';
 import 'edit_task_screen.dart';
+import 'profile_screen.dart';
 import '../models/task.dart';
+import '../providers/profile_provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/delete_task_dialog.dart';
@@ -323,6 +325,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.watch<ProfileProvider>().profile;
+    final photo = profile.photoBytes;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -331,11 +335,20 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good morning, Alex',
+                'Good morning, ${profile.firstName}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: navy,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Organize your day. Find your flow',
+                style: TextStyle(
+                  color: blue,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 6),
@@ -350,21 +363,40 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: navy,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Center(
-            child: Text(
-              'A',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
+        Semantics(
+          button: true,
+          label: 'Open profile',
+          child: GestureDetector(
+            key: const Key('profile-avatar'),
+            onTap: () => Navigator.push<void>(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: navy,
+                borderRadius: BorderRadius.circular(14),
+                image: photo == null
+                    ? null
+                    : DecorationImage(
+                        image: MemoryImage(photo),
+                        fit: BoxFit.cover,
+                      ),
               ),
+              child: photo == null
+                  ? Center(
+                      child: Text(
+                        profile.initial,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
           ),
         ),

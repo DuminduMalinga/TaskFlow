@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'providers/profile_provider.dart';
 import 'providers/task_provider.dart';
 import 'screens/task_home_screen.dart';
 
@@ -16,8 +17,11 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   }
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => TaskProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+      ],
       child: const TaskFlowApp(),
     ),
   );

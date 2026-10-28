@@ -23,6 +23,7 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _showDateError = false;
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   DateTime? _dueDate;
@@ -60,12 +61,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ),
     );
     if (selectedDate != null) {
-      setState(() => _dueDate = selectedDate);
+      setState(() {
+        _dueDate = selectedDate;
+        _showDateError = false;
+      });
     }
   }
 
   void _createTask() {
-    if (!_formKey.currentState!.validate()) return;
+    final isValid = _formKey.currentState!.validate();
+    if (_dueDate == null) setState(() => _showDateError = true);
+    if (!isValid || _dueDate == null) return;
     Navigator.pop(
       context,
       AddTaskResult(
@@ -154,14 +160,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const _FieldLabel(label: 'Due date', optional: true),
+                const _FieldLabel(label: 'Due date', required: true),
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: _selectDueDate,
                   borderRadius: BorderRadius.circular(12),
                   child: InputDecorator(
-                    decoration: const InputDecoration(
-                      suffixIcon: Icon(Icons.calendar_today_outlined, size: 19),
+                    decoration: InputDecoration(
+                      suffixIcon: const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 19,
+                      ),
+                      errorText: _showDateError ? 'Choose a due date' : null,
                     ),
                     child: Text(
                       _dueDate == null
@@ -177,14 +187,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     ),
                   ),
                 ),
-                if (_dueDate != null)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => setState(() => _dueDate = null),
-                      child: const Text('Remove date'),
-                    ),
-                  ),
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
@@ -230,15 +232,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 }
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({
-    required this.label,
-    this.required = false,
-    this.optional = false,
-  });
+  const _FieldLabel({required this.label, this.required = false});
 
   final String label;
   final bool required;
-  final bool optional;
 
   @override
   Widget build(BuildContext context) {
@@ -256,15 +253,6 @@ class _FieldLabel extends StatelessWidget {
           const Text(
             ' *',
             style: TextStyle(color: blue, fontWeight: FontWeight.w700),
-          ),
-        if (optional)
-          const Text(
-            '  Optional',
-            style: TextStyle(
-              color: muted,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
           ),
       ],
     );
