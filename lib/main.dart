@@ -24,7 +24,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: const TaskFlowApp(),
+      child: const DonezoApp(),
     ),
   );
 }

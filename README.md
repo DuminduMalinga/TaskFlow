@@ -1,8 +1,8 @@
-# TaskFlow
+# The Donezo
 
 > A focused, privacy-friendly task manager built with Flutter.
 
-TaskFlow helps you capture, organize, and complete everyday work without requiring an account or a network connection. Tasks, profile preferences, and theme settings are kept locally on the device, giving the app a fast and dependable offline-first experience.
+The Donezo helps you capture, organize, and complete everyday work without requiring an account or a network connection. Tasks, profile preferences, and theme settings are kept locally on the device, giving the app a fast and dependable offline-first experience.
 
 ## Highlights
 
@@ -16,6 +16,14 @@ TaskFlow helps you capture, organize, and complete everyday work without requiri
 - Use the same Flutter codebase across mobile, desktop, and web
 
 ## Screenshots
+
+### Splash screen
+
+<p align="center">
+  <img src="docs/screenshots/splash.png" alt="Donezo splash screen" width="240">
+</p>
+
+### App screens
 
 | Home | Tasks | Add Task |
 | :---: | :---: | :---: |
@@ -97,7 +105,7 @@ dart format .
 
 ## Building
 
-Flutter can package TaskFlow for any enabled target. For example:
+Flutter can package The Donezo for any enabled target. For example:
 
 ```bash
 flutter build apk       # Android

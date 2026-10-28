@@ -1,6 +1,6 @@
 {
-    "name": "todo",
-    "short_name": "todo",
+    "name": "The Donezo",
+    "short_name": "Donezo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

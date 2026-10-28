@@ -30,7 +30,10 @@ Future<void> pumpApp(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 1800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues({'tasks': jsonEncode(_seedTasks)});
+  SharedPreferences.setMockInitialValues({
+    'tasks': jsonEncode(_seedTasks),
+    'welcomeSeen': true,
+  });
   await tester.pumpWidget(
     MultiProvider(
       providers: [
@@ -40,7 +43,7 @@ Future<void> pumpApp(WidgetTester tester) async {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: const TaskFlowApp(),
+      child: const DonezoApp(),
     ),
   );
   await tester.pumpAndSettle();
@@ -54,7 +57,8 @@ Future<void> pickDate(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('renders the TaskFlow dashboard', (WidgetTester tester) async {
+  welcomeTests();
+  testWidgets('renders the Donezo dashboard', (WidgetTester tester) async {
     await pumpApp(tester);
 
     expect(find.text('Good morning, Alex'), findsOneWidget);
@@ -317,6 +321,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues({
+      'welcomeSeen': true,
       'profile': jsonEncode({
         'name': 'Sam Lee',
         'mobile': '0771234567',
@@ -332,7 +337,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => ProfileProvider()),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ],
-        child: const TaskFlowApp(),
+        child: const DonezoApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -345,5 +350,30 @@ void main() {
       find.widgetWithText(TextFormField, 'sam@example.com'),
       findsOneWidget,
     );
+  });
+}
+
+void welcomeTests() {
+  testWidgets('first launch shows the welcome screen once', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => TaskProvider(storage: PrefsTaskStorage()),
+          ),
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ],
+        child: const DonezoApp(),
+      ),
+    );
+    expect(find.text('Make it happen.'), findsOneWidget);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    expect(find.text('Your day.\nYour way.'), findsOneWidget);
+
+    await tester.tap(find.text('Get Started'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your day.\nYour way.'), findsNothing);
   });
 }

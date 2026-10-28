@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/theme_provider.dart';
-import 'screens/main_shell.dart';
+import 'screens/launch_gate.dart';
 import 'theme/app_colors.dart';
 
 ThemeData _buildTheme(AppColors colors, Brightness brightness) {
@@ -50,19 +50,19 @@ ThemeData _buildTheme(AppColors colors, Brightness brightness) {
   );
 }
 
-class TaskFlowApp extends StatelessWidget {
-  const TaskFlowApp({super.key});
+class DonezoApp extends StatelessWidget {
+  const DonezoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final mode = context.watch<ThemeProvider>().mode;
     return MaterialApp(
-      title: 'TaskFlow',
+      title: 'The Donezo',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(AppColors.light, Brightness.light),
       darkTheme: _buildTheme(AppColors.dark, Brightness.dark),
       themeMode: mode,
-      home: const MainShell(),
+      home: const LaunchGate(),
     );
   }
 }
