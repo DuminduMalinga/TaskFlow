@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'providers/profile_provider.dart';
 import 'providers/task_provider.dart';
+import 'providers/theme_provider.dart';
 import 'app.dart';
 
 void main() {
@@ -21,6 +22,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => TaskProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const TaskFlowApp(),
     ),

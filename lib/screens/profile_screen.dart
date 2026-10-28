@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../models/profile.dart';
 import '../providers/profile_provider.dart';
+import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -28,14 +29,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController _mobileController;
   late final TextEditingController _emailController;
   String? _photoBase64;
+  bool _filledFromSaved = false;
 
   @override
   void initState() {
     super.initState();
-    final profile = context.read<ProfileProvider>().profile;
-    _nameController = TextEditingController(text: profile.name);
-    _mobileController = TextEditingController(text: profile.mobile);
-    _emailController = TextEditingController(text: profile.email);
+    _nameController = TextEditingController();
+    _mobileController = TextEditingController();
+    _emailController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The saved profile loads asynchronously, and this screen can be built
+    // before it arrives, so fill the form once it is ready (only once, so
+    // later edits are never overwritten).
+    final provider = context.watch<ProfileProvider>();
+    if (_filledFromSaved || !provider.isLoaded) return;
+    _filledFromSaved = true;
+    final profile = provider.profile;
+    _nameController.text = profile.name;
+    _mobileController.text = profile.mobile;
+    _emailController.text = profile.email;
     _photoBase64 = profile.photoBase64;
   }
 
@@ -152,9 +168,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final photo = _photoBase64 == null ? null : base64Decode(_photoBase64!);
     final name = _nameController.text.trim();
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.card,
         automaticallyImplyLeading: false,
         leading: widget.embedded
             ? null
@@ -234,6 +250,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : 'Enter a valid email address';
                   },
                 ),
+                const SizedBox(height: 16),
+                const _Label('Appearance'),
+                const SizedBox(height: 8),
+                const _AppearancePicker(),
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
@@ -241,8 +261,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: FilledButton(
                     onPressed: _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.colors.accent,
+                      foregroundColor: context.colors.onAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -287,13 +307,13 @@ class _PhotoPicker extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 56,
-              backgroundColor: navy,
+              backgroundColor: context.colors.accent,
               backgroundImage: photo == null ? null : MemoryImage(photo!),
               child: photo == null
                   ? Text(
                       initial,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.colors.onAccent,
                         fontSize: 40,
                         fontWeight: FontWeight.w800,
                       ),
@@ -306,13 +326,13 @@ class _PhotoPicker extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: blue,
+                  color: context.colors.accent,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
+                  border: Border.all(color: context.colors.card, width: 3),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.camera_alt_rounded,
-                  color: Colors.white,
+                  color: context.colors.onAccent,
                   size: 18,
                 ),
               ),
@@ -336,18 +356,93 @@ class _Label extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: navy,
+          style: TextStyle(
+            color: context.colors.text,
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
         ),
         if (required)
-          const Text(
+          Text(
             ' *',
-            style: TextStyle(color: blue, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: context.colors.accent,
+              fontWeight: FontWeight.w700,
+            ),
           ),
       ],
+    );
+  }
+}
+
+/// Lets the user follow the device theme or force light or dark.
+class _AppearancePicker extends StatelessWidget {
+  const _AppearancePicker();
+
+  static const _options = [
+    (ThemeMode.system, 'System', Icons.brightness_auto_rounded),
+    (ThemeMode.light, 'Light', Icons.light_mode_outlined),
+    (ThemeMode.dark, 'Dark', Icons.dark_mode_outlined),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<ThemeProvider>();
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.border,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          for (final (mode, label, icon) in _options)
+            Expanded(
+              child: Semantics(
+                button: true,
+                selected: provider.mode == mode,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => provider.setMode(mode),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: provider.mode == mode
+                          ? colors.accent
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: 18,
+                          color: provider.mode == mode
+                              ? colors.onAccent
+                              : colors.muted,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          label,
+                          style: TextStyle(
+                            color: provider.mode == mode
+                                ? colors.onAccent
+                                : colors.muted,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

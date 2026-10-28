@@ -52,12 +52,12 @@ class TaskCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        border: Border.all(color: context.colors.border),
         boxShadow: [
           BoxShadow(
-            color: navy.withAlpha(10),
+            color: Colors.black.withAlpha(10),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -76,7 +76,7 @@ class TaskCard extends StatelessWidget {
                   Text(
                     task.title,
                     style: TextStyle(
-                      color: done ? subdued : navy,
+                      color: done ? context.colors.muted : context.colors.text,
                       fontSize: 16,
                       height: 1.5,
                       fontWeight: FontWeight.w700,
@@ -88,8 +88,8 @@ class TaskCard extends StatelessWidget {
                       task.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: muted,
+                      style: TextStyle(
+                        color: context.colors.muted,
                         fontSize: 13,
                         height: 1.5,
                       ),
@@ -107,7 +107,9 @@ class TaskCard extends StatelessWidget {
                         _MetaLabel(
                           icon: Icons.schedule_rounded,
                           text: _dueLabel(context, due),
-                          color: overdue ? danger : muted,
+                          color: overdue
+                              ? context.colors.danger
+                              : context.colors.muted,
                         ),
                     ],
                   ),
@@ -117,7 +119,7 @@ class TaskCard extends StatelessWidget {
           ),
           PopupMenuButton<_TaskAction>(
             tooltip: 'More actions',
-            icon: const Icon(Icons.more_vert_rounded, color: muted),
+            icon: Icon(Icons.more_vert_rounded, color: context.colors.muted),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
@@ -125,17 +127,21 @@ class TaskCard extends StatelessWidget {
               _TaskAction.edit => onEdit(),
               _TaskAction.delete => onDelete(),
             },
-            itemBuilder: (_) => const [
+            itemBuilder: (_) => [
               PopupMenuItem(
                 value: _TaskAction.edit,
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, size: 18, color: navy),
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: context.colors.text,
+                    ),
                     SizedBox(width: 12),
                     Text(
                       'Edit',
                       style: TextStyle(
-                        color: navy,
+                        color: context.colors.text,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -147,12 +153,16 @@ class TaskCard extends StatelessWidget {
                 value: _TaskAction.delete,
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline_rounded, size: 18, color: danger),
+                    Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: context.colors.danger,
+                    ),
                     SizedBox(width: 12),
                     Text(
                       'Delete',
                       style: TextStyle(
-                        color: danger,
+                        color: context.colors.danger,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -191,17 +201,17 @@ class _TaskCheckbox extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: value ? blue : Colors.white,
+                color: value ? context.colors.accent : context.colors.card,
                 border: Border.all(
-                  color: value ? blue : const Color(0xFF94A3B8),
+                  color: value ? context.colors.accent : context.colors.muted,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: value
-                  ? const Icon(
+                  ? Icon(
                       Icons.check_rounded,
-                      color: Colors.white,
+                      color: context.colors.onAccent,
                       size: 16,
                     )
                   : null,
@@ -214,18 +224,15 @@ class _TaskCheckbox extends StatelessWidget {
 }
 
 class _MetaLabel extends StatelessWidget {
-  const _MetaLabel({
-    required this.icon,
-    required this.text,
-    this.color = muted,
-  });
+  const _MetaLabel({required this.icon, required this.text, this.color});
 
   final IconData icon;
   final String text;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? context.colors.muted;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

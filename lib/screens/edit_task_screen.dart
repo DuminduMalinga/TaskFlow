@@ -65,17 +65,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
       initialDate: _dueDate ?? DateTime.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: blue,
-            onPrimary: Colors.white,
-            surface: Colors.white,
-            onSurface: navy,
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (selectedDate != null) {
       setState(() {
@@ -89,17 +78,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: _dueTime ?? TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: blue,
-            onPrimary: Colors.white,
-            surface: Colors.white,
-            onSurface: navy,
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (selected != null) setState(() => _dueTime = selected);
   }
@@ -153,9 +131,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.card,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           tooltip: 'Back',
@@ -174,9 +152,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Update the details of your existing task.',
-                  style: TextStyle(color: muted, fontSize: 14, height: 1.4),
+                  style: TextStyle(
+                    color: context.colors.muted,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 const _EditFieldLabel(label: 'Task title', required: true),
@@ -234,7 +216,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           ? 'Choose a date'
                           : _formatDate(_dueDate!),
                       style: TextStyle(
-                        color: _dueDate == null ? muted : navy,
+                        color: _dueDate == null
+                            ? context.colors.muted
+                            : context.colors.text,
                         fontSize: 14,
                         fontWeight: _dueDate == null
                             ? FontWeight.w400
@@ -264,7 +248,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           ? 'Add a time'
                           : _dueTime!.format(context),
                       style: TextStyle(
-                        color: _dueTime == null ? muted : navy,
+                        color: _dueTime == null
+                            ? context.colors.muted
+                            : context.colors.text,
                         fontSize: 14,
                         fontWeight: _dueTime == null
                             ? FontWeight.w400
@@ -280,8 +266,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   child: FilledButton(
                     onPressed: _saveChanges,
                     style: FilledButton.styleFrom(
-                      backgroundColor: blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.colors.accent,
+                      foregroundColor: context.colors.onAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -301,7 +287,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   height: 48,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(foregroundColor: navy),
+                    style: TextButton.styleFrom(
+                      foregroundColor: context.colors.text,
+                    ),
                     child: const Text(
                       'Cancel',
                       style: TextStyle(fontWeight: FontWeight.w700),
@@ -329,16 +317,19 @@ class _EditFieldLabel extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: navy,
+          style: TextStyle(
+            color: context.colors.text,
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
         ),
         if (required)
-          const Text(
+          Text(
             ' *',
-            style: TextStyle(color: blue, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: context.colors.accent,
+              fontWeight: FontWeight.w700,
+            ),
           ),
       ],
     );

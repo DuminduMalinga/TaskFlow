@@ -38,33 +38,44 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (value) => setState(() => _index = value),
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.card,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: blueTint,
+        indicatorColor: context.colors.accentTint,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
-            color: states.contains(WidgetState.selected) ? navy : muted,
+            color: states.contains(WidgetState.selected)
+                ? context.colors.text
+                : context.colors.muted,
             fontSize: 12,
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w700
                 : FontWeight.w500,
           ),
         ),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: muted),
-            selectedIcon: Icon(Icons.home_rounded, color: navy),
+            icon: Icon(Icons.home_outlined, color: context.colors.muted),
+            selectedIcon: Icon(Icons.home_rounded, color: context.colors.text),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.checklist_rounded, color: muted),
-            selectedIcon: Icon(Icons.checklist_rounded, color: navy),
+            icon: Icon(Icons.checklist_rounded, color: context.colors.muted),
+            selectedIcon: Icon(
+              Icons.checklist_rounded,
+              color: context.colors.text,
+            ),
             label: 'Tasks',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded, color: muted),
-            selectedIcon: Icon(Icons.person_rounded, color: navy),
+            icon: Icon(
+              Icons.person_outline_rounded,
+              color: context.colors.muted,
+            ),
+            selectedIcon: Icon(
+              Icons.person_rounded,
+              color: context.colors.text,
+            ),
             label: 'Profile',
           ),
         ],

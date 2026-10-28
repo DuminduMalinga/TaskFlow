@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo/providers/profile_provider.dart';
 import 'package:todo/providers/task_provider.dart';
+import 'package:todo/providers/theme_provider.dart';
 import 'package:todo/services/prefs_task_storage.dart';
 
 import 'package:todo/app.dart';
@@ -37,6 +38,7 @@ Future<void> pumpApp(WidgetTester tester) async {
           create: (_) => TaskProvider(storage: PrefsTaskStorage()),
         ),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const TaskFlowApp(),
     ),
@@ -306,5 +308,42 @@ void main() {
 
     expect(find.text('Pay rent'), findsOneWidget);
     expect(find.text('Financial'), findsOneWidget);
+  });
+
+  testWidgets('saved profile details are shown when the app reopens', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({
+      'profile': jsonEncode({
+        'name': 'Sam Lee',
+        'mobile': '0771234567',
+        'email': 'sam@example.com',
+      }),
+    });
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => TaskProvider(storage: PrefsTaskStorage()),
+          ),
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ],
+        child: const TaskFlowApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextFormField, 'Sam Lee'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, '0771234567'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextFormField, 'sam@example.com'),
+      findsOneWidget,
+    );
   });
 }

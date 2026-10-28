@@ -196,8 +196,8 @@ class _TaskHomePageState extends State<TaskHomePage> {
               // Both tabs have one, so they can't share the default hero tag.
               heroTag: null,
               onPressed: () => openTaskEditor(context),
-              backgroundColor: blue,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.accent,
+              foregroundColor: context.colors.onAccent,
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
@@ -224,7 +224,7 @@ class _SearchSortBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final outline = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: border),
+      borderSide: BorderSide(color: context.colors.border),
     );
     return Row(
       children: [
@@ -232,18 +232,21 @@ class _SearchSortBar extends StatelessWidget {
           child: TextField(
             onChanged: onQueryChanged,
             textInputAction: TextInputAction.search,
-            style: const TextStyle(color: navy, fontSize: 14),
+            style: TextStyle(color: context.colors.text, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search tasks',
-              hintStyle: const TextStyle(color: muted, fontSize: 14),
-              prefixIcon: const Icon(Icons.search_rounded, color: muted),
+              hintStyle: TextStyle(color: context.colors.muted, fontSize: 14),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: context.colors.muted,
+              ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: context.colors.card,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
               border: outline,
               enabledBorder: outline,
               focusedBorder: outline.copyWith(
-                borderSide: const BorderSide(color: blue, width: 2),
+                borderSide: BorderSide(color: context.colors.accent, width: 2),
               ),
             ),
           ),
@@ -264,11 +267,11 @@ class _SearchSortBar extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: border),
+              border: Border.all(color: context.colors.border),
             ),
-            child: const Icon(Icons.sort_rounded, color: navy),
+            child: Icon(Icons.sort_rounded, color: context.colors.text),
           ),
         ),
       ],
@@ -298,7 +301,7 @@ class _Header extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: navy,
+                color: context.colors.accent,
                 borderRadius: BorderRadius.circular(16),
                 image: photo == null
                     ? null
@@ -311,8 +314,8 @@ class _Header extends StatelessWidget {
                   ? Center(
                       child: Text(
                         profile.initial,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.colors.onAccent,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
@@ -331,16 +334,20 @@ class _Header extends StatelessWidget {
                 'Good morning, ${profile.firstName}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: navy,
+                style: TextStyle(
+                  color: context.colors.text,
                   fontSize: 20,
                   height: 1.4,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Text(
+              Text(
                 'Small steps today, big wins tomorrow.',
-                style: TextStyle(color: muted, fontSize: 13, height: 1.5),
+                style: TextStyle(
+                  color: context.colors.muted,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
               ),
             ],
           ),
@@ -349,15 +356,15 @@ class _Header extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: border),
+            border: Border.all(color: context.colors.border),
           ),
           child: Text(
             dateLabel,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: navy,
+            style: TextStyle(
+              color: context.colors.text,
               fontSize: 12,
               height: 1.35,
               fontWeight: FontWeight.w600,
@@ -383,6 +390,12 @@ class ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The card is dark in both themes, so it uses the light-on-dark accent.
+    final heroAccent = AppColors.dark.accent;
+    final colors = context.colors;
+    final track = Theme.of(context).brightness == Brightness.dark
+        ? colors.progressTrack
+        : colors.progressTrack.withAlpha(64);
     final percent = (progress * 100).round();
     final remaining = total - completed;
     final caption = total == 0
@@ -393,11 +406,11 @@ class ProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: navy,
+        color: context.colors.hero,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: navy.withAlpha(40),
+            color: Colors.black.withAlpha(40),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -456,8 +469,8 @@ class ProgressCard extends StatelessWidget {
                         value: progress,
                         strokeWidth: 7,
                         strokeCap: StrokeCap.round,
-                        backgroundColor: Colors.white.withAlpha(41),
-                        valueColor: const AlwaysStoppedAnimation<Color>(blue),
+                        backgroundColor: track,
+                        valueColor: AlwaysStoppedAnimation<Color>(heroAccent),
                       ),
                       Center(
                         child: Text(
@@ -481,8 +494,8 @@ class ProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: Colors.white.withAlpha(41),
-              valueColor: const AlwaysStoppedAnimation<Color>(blue),
+              backgroundColor: track,
+              valueColor: AlwaysStoppedAnimation<Color>(heroAccent),
             ),
           ),
         ],
@@ -537,9 +550,9 @@ class _Stat extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border),
+          border: Border.all(color: context.colors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,16 +561,16 @@ class _Stat extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: blueTint,
+                color: context.colors.accentTint,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: blue, size: 18),
+              child: Icon(icon, color: context.colors.accent, size: 18),
             ),
             const SizedBox(height: 12),
             Text(
               '$value',
-              style: const TextStyle(
-                color: navy,
+              style: TextStyle(
+                color: context.colors.text,
                 fontSize: 24,
                 height: 1.2,
                 fontWeight: FontWeight.w700,
@@ -565,8 +578,8 @@ class _Stat extends StatelessWidget {
             ),
             Text(
               label,
-              style: const TextStyle(
-                color: muted,
+              style: TextStyle(
+                color: context.colors.muted,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -593,7 +606,7 @@ class FilterTabs extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: trackColor,
+        color: context.colors.border,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -644,12 +657,12 @@ class _FilterTab extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: selected ? navy : Colors.transparent,
+              color: selected ? context.colors.accent : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               boxShadow: selected
                   ? [
                       BoxShadow(
-                        color: navy.withAlpha(50),
+                        color: Colors.black.withAlpha(50),
                         blurRadius: 3,
                         offset: const Offset(0, 1),
                       ),
@@ -659,7 +672,9 @@ class _FilterTab extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : muted,
+                color: selected
+                    ? context.colors.onAccent
+                    : context.colors.muted,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -684,13 +699,13 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border),
+          border: Border.all(color: context.colors.border),
         ),
-        child: const Text(
+        child: Text(
           'No tasks here',
-          style: TextStyle(color: muted, fontSize: 14),
+          style: TextStyle(color: context.colors.muted, fontSize: 14),
         ),
       );
     }
@@ -700,19 +715,23 @@ class _EmptyState extends StatelessWidget {
         children: [
           const _ChecklistIllustration(),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Your day, your progress',
             style: TextStyle(
-              color: navy,
+              color: context.colors.text,
               fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Add your first task and start building momentum.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: muted, fontSize: 14, height: 1.4),
+            style: TextStyle(
+              color: context.colors.muted,
+              fontSize: 14,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
@@ -720,8 +739,8 @@ class _EmptyState extends StatelessWidget {
             icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Add Your First Task'),
             style: FilledButton.styleFrom(
-              backgroundColor: navy,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.accent,
+              foregroundColor: context.colors.onAccent,
               minimumSize: const Size(0, 48),
               padding: const EdgeInsets.symmetric(horizontal: 24),
               textStyle: const TextStyle(
@@ -751,14 +770,18 @@ class _ChecklistIllustration extends StatelessWidget {
             width: 16,
             height: 16,
             decoration: BoxDecoration(
-              color: checked ? blue : Colors.transparent,
+              color: checked ? context.colors.accent : Colors.transparent,
               borderRadius: BorderRadius.circular(5),
               border: checked
                   ? null
-                  : Border.all(color: const Color(0xFF94A3B8), width: 2),
+                  : Border.all(color: context.colors.muted, width: 2),
             ),
             child: checked
-                ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                ? Icon(
+                    Icons.check_rounded,
+                    size: 12,
+                    color: context.colors.onAccent,
+                  )
                 : null,
           ),
           const SizedBox(width: 8),
@@ -766,7 +789,9 @@ class _ChecklistIllustration extends StatelessWidget {
             width: lineWidth,
             height: 8,
             decoration: BoxDecoration(
-              color: checked ? const Color(0xFFC9D3EA) : border,
+              color: checked
+                  ? context.colors.accent.withAlpha(110)
+                  : context.colors.border,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -790,9 +815,9 @@ class _ChecklistIllustration extends StatelessWidget {
                 height: 104,
                 padding: const EdgeInsets.fromLTRB(12, 28, 6, 0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.colors.card,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFC9D3EA), width: 2),
+                  border: Border.all(color: context.colors.border, width: 2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -812,7 +837,7 @@ class _ChecklistIllustration extends StatelessWidget {
                 width: 32,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: navy,
+                  color: context.colors.accent,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -873,7 +898,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: Material(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -888,7 +913,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                     width: 38,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD8DDE8),
+                      color: context.colors.border,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -896,8 +921,8 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                 const SizedBox(height: 20),
                 Text(
                   isEditing ? 'Edit task' : 'Create a new task',
-                  style: const TextStyle(
-                    color: navy,
+                  style: TextStyle(
+                    color: context.colors.text,
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
                   ),
@@ -932,7 +957,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                   child: FilledButton(
                     onPressed: _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: blue,
+                      backgroundColor: context.colors.accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

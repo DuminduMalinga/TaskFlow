@@ -13,19 +13,25 @@ class ProfileProvider extends ChangeNotifier {
   static const _key = 'profile';
 
   Profile _profile = const Profile();
+  bool _isLoaded = false;
 
   Profile get profile => _profile;
 
+  /// False until the saved profile has been read from storage.
+  bool get isLoaded => _isLoaded;
+
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null) return;
     try {
-      _profile = Profile.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-      notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_key);
+      if (raw != null) {
+        _profile = Profile.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      }
     } catch (_) {
       // Corrupt data: keep the default profile.
     }
+    _isLoaded = true;
+    notifyListeners();
   }
 
   Future<void> update(Profile profile) async {

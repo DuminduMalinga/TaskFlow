@@ -54,17 +54,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
       initialDate: _dueDate ?? DateTime.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: blue,
-            onPrimary: Colors.white,
-            surface: Colors.white,
-            onSurface: navy,
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (selectedDate != null) {
       setState(() {
@@ -78,17 +67,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: _dueTime ?? TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: blue,
-            onPrimary: Colors.white,
-            surface: Colors.white,
-            onSurface: navy,
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (selected != null) setState(() => _dueTime = selected);
   }
@@ -142,9 +120,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.card,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           tooltip: 'Back',
@@ -163,9 +141,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Stay on top of what matters.',
-                  style: TextStyle(color: muted, fontSize: 14, height: 1.4),
+                  style: TextStyle(
+                    color: context.colors.muted,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 const _FieldLabel(label: 'Task title', required: true),
@@ -223,7 +205,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                           ? 'Choose a date'
                           : _formatDate(_dueDate!),
                       style: TextStyle(
-                        color: _dueDate == null ? muted : navy,
+                        color: _dueDate == null
+                            ? context.colors.muted
+                            : context.colors.text,
                         fontSize: 14,
                         fontWeight: _dueDate == null
                             ? FontWeight.w400
@@ -253,7 +237,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                           ? 'Add a time'
                           : _dueTime!.format(context),
                       style: TextStyle(
-                        color: _dueTime == null ? muted : navy,
+                        color: _dueTime == null
+                            ? context.colors.muted
+                            : context.colors.text,
                         fontSize: 14,
                         fontWeight: _dueTime == null
                             ? FontWeight.w400
@@ -269,8 +255,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: FilledButton(
                     onPressed: _createTask,
                     style: FilledButton.styleFrom(
-                      backgroundColor: blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.colors.accent,
+                      foregroundColor: context.colors.onAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -290,7 +276,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   height: 48,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(foregroundColor: navy),
+                    style: TextButton.styleFrom(
+                      foregroundColor: context.colors.text,
+                    ),
                     child: const Text(
                       'Cancel',
                       style: TextStyle(fontWeight: FontWeight.w700),
@@ -318,16 +306,19 @@ class _FieldLabel extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: navy,
+          style: TextStyle(
+            color: context.colors.text,
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
         ),
         if (required)
-          const Text(
+          Text(
             ' *',
-            style: TextStyle(color: blue, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: context.colors.accent,
+              fontWeight: FontWeight.w700,
+            ),
           ),
       ],
     );

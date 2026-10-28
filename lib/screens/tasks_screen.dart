@@ -59,13 +59,13 @@ class _TasksScreenState extends State<TasksScreen> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            const SliverPadding(
+            SliverPadding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: Text(
                   'Tasks',
                   style: TextStyle(
-                    color: navy,
+                    color: context.colors.text,
                     fontSize: 24,
                     height: 1.3,
                     fontWeight: FontWeight.w700,
@@ -158,8 +158,8 @@ class _TasksScreenState extends State<TasksScreen> {
               // Both tabs have one, so they can't share the default hero tag.
               heroTag: null,
               onPressed: () => openTaskEditor(context),
-              backgroundColor: blue,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.accent,
+              foregroundColor: context.colors.onAccent,
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
@@ -180,23 +180,23 @@ class _SearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final outline = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: border),
+      borderSide: BorderSide(color: context.colors.border),
     );
     return TextField(
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(color: navy, fontSize: 14),
+      style: TextStyle(color: context.colors.text, fontSize: 14),
       decoration: InputDecoration(
         hintText: 'Search tasks',
-        hintStyle: const TextStyle(color: muted, fontSize: 14),
-        prefixIcon: const Icon(Icons.search_rounded, color: muted),
+        hintStyle: TextStyle(color: context.colors.muted, fontSize: 14),
+        prefixIcon: Icon(Icons.search_rounded, color: context.colors.muted),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: context.colors.card,
         contentPadding: const EdgeInsets.symmetric(vertical: 14),
         border: outline,
         enabledBorder: outline,
         focusedBorder: outline.copyWith(
-          borderSide: const BorderSide(color: blue, width: 2),
+          borderSide: BorderSide(color: context.colors.accent, width: 2),
         ),
       ),
     );
@@ -233,9 +233,11 @@ class _BucketChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? navy : Colors.white,
+            color: selected ? context.colors.accent : context.colors.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: selected ? navy : border),
+            border: Border.all(
+              color: selected ? context.colors.accent : context.colors.border,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -243,7 +245,9 @@ class _BucketChip extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? Colors.white : navy,
+                  color: selected
+                      ? context.colors.onAccent
+                      : context.colors.text,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -254,10 +258,10 @@ class _BucketChip extends StatelessWidget {
                   '$count',
                   style: TextStyle(
                     color: selected
-                        ? Colors.white.withAlpha(200)
+                        ? context.colors.onAccent.withAlpha(200)
                         : alert
-                        ? danger
-                        : muted,
+                        ? context.colors.danger
+                        : context.colors.muted,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -284,7 +288,9 @@ class _GroupHeader extends StatelessWidget {
         Text(
           bucket.label.toUpperCase(),
           style: TextStyle(
-            color: bucket == TaskBucket.overdue ? danger : muted,
+            color: bucket == TaskBucket.overdue
+                ? context.colors.danger
+                : context.colors.muted,
             fontSize: 12,
             letterSpacing: 0.7,
             fontWeight: FontWeight.w700,
@@ -294,13 +300,13 @@ class _GroupHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: trackColor,
+            color: context.colors.border,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             '$count',
-            style: const TextStyle(
-              color: muted,
+            style: TextStyle(
+              color: context.colors.muted,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -322,17 +328,17 @@ class _EmptyTasks extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             hasTasks ? 'No tasks here' : 'No tasks yet',
-            style: const TextStyle(
-              color: navy,
+            style: TextStyle(
+              color: context.colors.text,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -342,7 +348,7 @@ class _EmptyTasks extends StatelessWidget {
             hasTasks
                 ? 'Try another filter or search.'
                 : 'Add your first task to see it here.',
-            style: const TextStyle(color: muted, fontSize: 13),
+            style: TextStyle(color: context.colors.muted, fontSize: 13),
           ),
           if (!hasTasks) ...[
             const SizedBox(height: 16),
@@ -351,8 +357,8 @@ class _EmptyTasks extends StatelessWidget {
               icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Add Your First Task'),
               style: FilledButton.styleFrom(
-                backgroundColor: navy,
-                foregroundColor: Colors.white,
+                backgroundColor: context.colors.accent,
+                foregroundColor: context.colors.onAccent,
                 minimumSize: const Size(0, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

@@ -8,7 +8,7 @@ class DeleteTaskDialog extends StatelessWidget {
   static Future<bool?> show(BuildContext context) {
     return showDialog<bool>(
       context: context,
-      barrierColor: navy.withAlpha(150),
+      barrierColor: Colors.black.withAlpha(150),
       builder: (_) => const DeleteTaskDialog(),
     );
   }
@@ -21,11 +21,11 @@ class DeleteTaskDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: navy.withAlpha(30),
+              color: Colors.black.withAlpha(30),
               blurRadius: 24,
               offset: const Offset(0, 10),
             ),
@@ -38,30 +38,34 @@ class DeleteTaskDialog extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: const Color(0xFFFEE2E2),
+                color: context.colors.dangerTint,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.delete_outline_rounded,
-                color: danger,
+                color: context.colors.danger,
                 size: 26,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Delete this task?',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: navy,
+                color: context.colors.text,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'You can undo this right after deleting.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 14, height: 1.4),
+              style: TextStyle(
+                color: context.colors.muted,
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 24),
             Row(
@@ -71,16 +75,18 @@ class DeleteTaskDialog extends StatelessWidget {
                     onPressed: () => Navigator.pop(context, false),
                     style: ButtonStyle(
                       minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
-                      foregroundColor: const WidgetStatePropertyAll(navy),
+                      foregroundColor: WidgetStatePropertyAll(
+                        context.colors.text,
+                      ),
                       overlayColor: WidgetStateProperty.resolveWith(
                         (states) => states.contains(WidgetState.pressed)
-                            ? const Color(0xFFE9EEF8)
+                            ? context.colors.border
                             : null,
                       ),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
-                          side: const BorderSide(color: border),
+                          side: BorderSide(color: context.colors.border),
                         ),
                       ),
                     ),
@@ -98,11 +104,14 @@ class DeleteTaskDialog extends StatelessWidget {
                       minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
                       backgroundColor: WidgetStateProperty.resolveWith(
                         (states) => states.contains(WidgetState.pressed)
-                            ? const Color(0xFF991B1B)
-                            : danger,
+                            ? Color.alphaBlend(
+                                Colors.black.withAlpha(40),
+                                context.colors.danger,
+                              )
+                            : context.colors.danger,
                       ),
-                      foregroundColor: const WidgetStatePropertyAll(
-                        Colors.white,
+                      foregroundColor: WidgetStatePropertyAll(
+                        context.colors.onAccent,
                       ),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(

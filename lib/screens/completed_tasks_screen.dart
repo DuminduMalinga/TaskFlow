@@ -22,9 +22,9 @@ class CompletedTasksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedTasks = context.watch<TaskProvider>().completedTasks;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.card,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.card,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           tooltip: 'Back',
@@ -69,8 +69,8 @@ class _CompletedSummary extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         '$count ${count == 1 ? 'task' : 'tasks'} completed',
-        style: const TextStyle(
-          color: muted,
+        style: TextStyle(
+          color: context.colors.muted,
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -90,9 +90,9 @@ class _CompletedTaskCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: border),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,12 +106,12 @@ class _CompletedTaskCard extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: blue,
+                  color: context.colors.accent,
                   borderRadius: BorderRadius.circular(7),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check_rounded,
-                  color: Colors.white,
+                  color: context.colors.onAccent,
                   size: 17,
                 ),
               ),
@@ -124,8 +124,8 @@ class _CompletedTaskCard extends StatelessWidget {
               children: [
                 Text(
                   task.title,
-                  style: const TextStyle(
-                    color: muted,
+                  style: TextStyle(
+                    color: context.colors.muted,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     decoration: TextDecoration.lineThrough,
@@ -136,8 +136,8 @@ class _CompletedTaskCard extends StatelessWidget {
                   task.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: muted,
+                  style: TextStyle(
+                    color: context.colors.muted,
                     fontSize: 12,
                     height: 1.3,
                   ),
@@ -149,7 +149,7 @@ class _CompletedTaskCard extends StatelessWidget {
             onPressed: onReactivate,
             tooltip: 'Mark task active',
             icon: const Icon(Icons.refresh_rounded, size: 20),
-            color: blue,
+            color: context.colors.accent,
             visualDensity: VisualDensity.compact,
           ),
         ],
@@ -173,26 +173,30 @@ class _CompletedEmptyState extends StatelessWidget {
               width: 76,
               height: 76,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F0FF),
+                color: context.colors.accentTint,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Icon(Icons.task_alt_rounded, color: blue, size: 38),
+              child: Icon(
+                Icons.task_alt_rounded,
+                color: context.colors.accent,
+                size: 38,
+              ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No completed tasks yet',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: navy,
+                color: context.colors.text,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Finish a task and it will appear here.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 13),
+              style: TextStyle(color: context.colors.muted, fontSize: 13),
             ),
           ],
         ),
