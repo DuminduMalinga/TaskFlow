@@ -1,16 +1,35 @@
-# todo
+# TaskFlow
 
-A new Flutter project.
+A Flutter to-do app with task categories, due dates and times, multiple profiles, and light/dark themes. Tasks are stored locally in SQLite and state is managed with Provider.
+
+## Screenshots
+
+| Home | Tasks | Add Task |
+| :---: | :---: | :---: |
+| ![Home](docs/screenshots/home.png) | ![Tasks](docs/screenshots/tasks.png) | ![Add Task](docs/screenshots/add_task.png) |
+
+| Edit Task | Completed | Profile |
+| :---: | :---: | :---: |
+| ![Edit Task](docs/screenshots/edit_task.png) | ![Completed](docs/screenshots/completed.png) | ![Profile](docs/screenshots/profile.png) |
+
+## Features
+
+- Add, edit, and delete tasks with a due date and time
+- Organize tasks by category
+- Separate tabs for active and completed tasks
+- Multiple profiles
+- Light and dark themes
+- Local persistence with SQLite
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+Run the tests with:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter test
+```
