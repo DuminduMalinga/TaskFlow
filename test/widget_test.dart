@@ -98,7 +98,9 @@ void main() {
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.byTooltip('Edit task').first);
+    await tester.tap(find.byTooltip('More actions').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit Task'), findsOneWidget);
@@ -140,7 +142,9 @@ void main() {
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.tap(find.byTooltip('More actions').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
 
     expect(find.text('Delete this task?'), findsOneWidget);
@@ -148,13 +152,15 @@ void main() {
       find.text('You can undo this right after deleting.'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
 
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.text('Plan the day'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.tap(find.byTooltip('More actions').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -176,7 +182,9 @@ void main() {
 
   testWidgets('can undo a deletion', (WidgetTester tester) async {
     await pumpApp(tester);
-    await tester.tap(find.byTooltip('Delete task').first);
+    await tester.tap(find.byTooltip('More actions').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();

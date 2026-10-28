@@ -30,6 +30,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late DateTime? _dueDate;
+  TimeOfDay? _dueTime;
 
   @override
   void initState() {
@@ -39,6 +40,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       text: widget.task.description,
     );
     _dueDate = widget.task.dueDate;
+    final due = widget.task.dueDate;
+    // Midnight means "no time set".
+    if (due != null && (due.hour != 0 || due.minute != 0)) {
+      _dueTime = TimeOfDay.fromDateTime(due);
+    }
   }
 
   @override
@@ -74,6 +80,37 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
+  Future<void> _selectDueTime() async {
+    final selected = await showTimePicker(
+      context: context,
+      initialTime: _dueTime ?? TimeOfDay.now(),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: blue,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: navy,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (selected != null) setState(() => _dueTime = selected);
+  }
+
+  DateTime _combinedDueDate() {
+    final date = _dueDate!;
+    final time = _dueTime;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time?.hour ?? 0,
+      time?.minute ?? 0,
+    );
+  }
+
   void _saveChanges() {
     final isValid = _formKey.currentState!.validate();
     if (_dueDate == null) setState(() => _showDateError = true);
@@ -83,7 +120,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       EditTaskResult(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        dueDate: _dueDate,
+        dueDate: _combinedDueDate(),
       ),
     );
   }
@@ -187,6 +224,36 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                         color: _dueDate == null ? muted : navy,
                         fontSize: 14,
                         fontWeight: _dueDate == null
+                            ? FontWeight.w400
+                            : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const _EditFieldLabel(label: 'Time (optional)'),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _selectDueTime,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      suffixIcon: _dueTime == null
+                          ? const Icon(Icons.schedule_rounded, size: 19)
+                          : IconButton(
+                              onPressed: () => setState(() => _dueTime = null),
+                              tooltip: 'Clear time',
+                              icon: const Icon(Icons.close_rounded, size: 19),
+                            ),
+                    ),
+                    child: Text(
+                      _dueTime == null
+                          ? 'Add a time'
+                          : _dueTime!.format(context),
+                      style: TextStyle(
+                        color: _dueTime == null ? muted : navy,
+                        fontSize: 14,
+                        fontWeight: _dueTime == null
                             ? FontWeight.w400
                             : FontWeight.w600,
                       ),

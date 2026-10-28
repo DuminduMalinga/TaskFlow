@@ -22,7 +22,7 @@ class DeleteTaskDialog extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
               color: navy.withAlpha(30),
@@ -38,13 +38,13 @@ class DeleteTaskDialog extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF4E5),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
-                Icons.warning_amber_rounded,
-                color: blue,
-                size: 29,
+                Icons.delete_outline_rounded,
+                color: danger,
+                size: 26,
               ),
             ),
             const SizedBox(height: 16),
@@ -54,7 +54,7 @@ class DeleteTaskDialog extends StatelessWidget {
               style: TextStyle(
                 color: navy,
                 fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
@@ -79,7 +79,7 @@ class DeleteTaskDialog extends StatelessWidget {
                       ),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(14),
                           side: const BorderSide(color: border),
                         ),
                       ),
@@ -98,15 +98,15 @@ class DeleteTaskDialog extends StatelessWidget {
                       minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
                       backgroundColor: WidgetStateProperty.resolveWith(
                         (states) => states.contains(WidgetState.pressed)
-                            ? const Color(0xFF102044)
-                            : navy,
+                            ? const Color(0xFF991B1B)
+                            : danger,
                       ),
                       foregroundColor: const WidgetStatePropertyAll(
                         Colors.white,
                       ),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),

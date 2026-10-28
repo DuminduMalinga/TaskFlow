@@ -103,31 +103,23 @@ class _TaskHomePageState extends State<TaskHomePage> {
   }
 
   String get _dateLabel {
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = [
-      'January',
-      'February',
-      'March',
-      'April',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
       'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final now = DateTime.now();
-    return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
+    return '${weekdays[now.weekday - 1]}\n${now.day} ${months[now.month - 1]}';
   }
 
   Future<void> _openTaskEditor({Task? task}) async {
@@ -244,7 +236,12 @@ class _TaskHomePageState extends State<TaskHomePage> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
               sliver: _visibleTasks.isEmpty
-                  ? const SliverToBoxAdapter(child: _EmptyState())
+                  ? SliverToBoxAdapter(
+                      child: _EmptyState(
+                        hasTasks: _tasks.isNotEmpty,
+                        onAdd: _openTaskEditor,
+                      ),
+                    )
                   : SliverList.separated(
                       itemCount: _visibleTasks.length,
                       itemBuilder: (context, index) {
@@ -263,14 +260,20 @@ class _TaskHomePageState extends State<TaskHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openTaskEditor,
-        backgroundColor: blue,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        tooltip: 'Add task',
-        child: const Icon(Icons.add_rounded, size: 30),
-      ),
+      // The empty state has its own "Add Your First Task" button.
+      floatingActionButton: _tasks.isEmpty
+          ? null
+          : FloatingActionButton(
+              onPressed: _openTaskEditor,
+              backgroundColor: blue,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              tooltip: 'Add task',
+              child: const Icon(Icons.add_rounded, size: 30),
+            ),
     );
   }
 }
@@ -288,30 +291,54 @@ class _SearchSortBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final outline = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: border),
+    );
     return Row(
       children: [
         Expanded(
           child: TextField(
             onChanged: onQueryChanged,
             textInputAction: TextInputAction.search,
-            decoration: const InputDecoration(
+            style: const TextStyle(color: navy, fontSize: 14),
+            decoration: InputDecoration(
               hintText: 'Search tasks',
-              prefixIcon: Icon(Icons.search_rounded),
-              isDense: true,
+              hintStyle: const TextStyle(color: muted, fontSize: 14),
+              prefixIcon: const Icon(Icons.search_rounded, color: muted),
               filled: true,
               fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: outline,
+              enabledBorder: outline,
+              focusedBorder: outline.copyWith(
+                borderSide: const BorderSide(color: blue, width: 2),
+              ),
             ),
           ),
         ),
+        const SizedBox(width: 8),
         PopupMenuButton<TaskSort>(
           tooltip: 'Sort tasks',
-          icon: const Icon(Icons.sort_rounded, color: navy),
           initialValue: sort,
           onSelected: onSortChanged,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           itemBuilder: (_) => [
             for (final option in TaskSort.values)
               PopupMenuItem(value: option, child: Text(option.label)),
           ],
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border),
+            ),
+            child: const Icon(Icons.sort_rounded, color: navy),
+          ),
         ),
       ],
     );
@@ -328,41 +355,7 @@ class _Header extends StatelessWidget {
     final profile = context.watch<ProfileProvider>().profile;
     final photo = profile.photoBytes;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Good morning, ${profile.firstName}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: navy,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Organize your day. Find your flow',
-                style: TextStyle(
-                  color: blue,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                dateLabel,
-                style: const TextStyle(
-                  color: muted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
         Semantics(
           button: true,
           label: 'Open profile',
@@ -373,11 +366,11 @@ class _Header extends StatelessWidget {
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             ),
             child: Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: navy,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 image: photo == null
                     ? null
                     : DecorationImage(
@@ -392,11 +385,53 @@ class _Header extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     )
                   : null,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Good morning, ${profile.firstName}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: navy,
+                  fontSize: 20,
+                  height: 1.4,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Text(
+                'Small steps today, big wins tomorrow.',
+                style: TextStyle(color: muted, fontSize: 13, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: border),
+          ),
+          child: Text(
+            dateLabel,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: navy,
+              fontSize: 12,
+              height: 1.35,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -419,6 +454,13 @@ class ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final percent = (progress * 100).round();
+    final remaining = total - completed;
+    final caption = total == 0
+        ? 'Add a task to get started'
+        : remaining == 0
+        ? 'All caught up. Nice work!'
+        : '$remaining ${remaining == 1 ? 'task' : 'tasks'} left today';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -426,75 +468,92 @@ class ProgressCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: navy.withAlpha(35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: navy.withAlpha(40),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Daily progress',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  completed == total && total > 0
-                      ? 'All done for today!'
-                      : '$completed of $total tasks completed',
-                  style: const TextStyle(
-                    color: Color(0xFFB8C6E5),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 8,
-                    backgroundColor: Colors.white.withAlpha(35),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF60A5FA),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'DAILY PROGRESS',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(184),
+                        fontSize: 12,
+                        letterSpacing: 0.7,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$completed of $total done',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      caption,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(184),
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Semantics(
+                label: '$percent percent complete',
+                excludeSemantics: true,
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 7,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Colors.white.withAlpha(41),
+                        valueColor: const AlwaysStoppedAnimation<Color>(blue),
+                      ),
+                      Center(
+                        child: Text(
+                          '$percent%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(width: 20),
-          SizedBox(
-            width: 66,
-            height: 66,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircularProgressIndicator(
-                  value: progress,
-                  strokeWidth: 6,
-                  backgroundColor: Colors.white.withAlpha(25),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF60A5FA),
-                  ),
-                ),
-                Text(
-                  '${(progress * 100).round()}%',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.white.withAlpha(41),
+              valueColor: const AlwaysStoppedAnimation<Color>(blue),
             ),
           ),
         ],
@@ -518,50 +577,69 @@ class _StatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _Stat(value: total, label: 'Total'),
-        const SizedBox(width: 10),
-        _Stat(value: completed, label: 'Completed', accent: true),
-        const SizedBox(width: 10),
-        _Stat(value: remaining, label: 'Remaining'),
+        _Stat(value: total, label: 'Total', icon: Icons.list_alt_rounded),
+        const SizedBox(width: 12),
+        _Stat(
+          value: completed,
+          label: 'Completed',
+          icon: Icons.check_circle_outline_rounded,
+        ),
+        const SizedBox(width: 12),
+        _Stat(
+          value: remaining,
+          label: 'Remaining',
+          icon: Icons.schedule_rounded,
+        ),
       ],
     );
   }
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label, this.accent = false});
+  const _Stat({required this.value, required this.label, required this.icon});
 
   final int value;
   final String label;
-  final bool accent;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: border),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: blueTint,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: blue, size: 18),
+            ),
+            const SizedBox(height: 12),
             Text(
               '$value',
-              style: TextStyle(
-                color: accent ? blue : navy,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+              style: const TextStyle(
+                color: navy,
+                fontSize: 24,
+                height: 1.2,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 3),
             Text(
               label,
               style: const TextStyle(
                 color: muted,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -586,13 +664,13 @@ class FilterTabs extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF1F7),
-        borderRadius: BorderRadius.circular(12),
+        color: trackColor,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           _FilterTab(
-            label: 'All tasks',
+            label: 'All',
             selected: selected == TaskFilter.all,
             onTap: () => onSelected(TaskFilter.all),
           ),
@@ -626,31 +704,36 @@ class _FilterTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(9),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: navy.withAlpha(10),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: selected ? navy : muted,
-              fontSize: 12,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: selected ? navy : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: navy.withAlpha(50),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.white : muted,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -658,6 +741,8 @@ class _FilterTab extends StatelessWidget {
     );
   }
 }
+
+enum _TaskAction { edit, delete }
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
@@ -673,59 +758,151 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  static String _dueLabel(BuildContext context, DateTime due) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final date = '${months[due.month - 1]} ${due.day}';
+    // Midnight means "no time set".
+    if (due.hour == 0 && due.minute == 0) return date;
+    final time = MaterialLocalizations.of(
+      context,
+    ).formatTimeOfDay(TimeOfDay.fromDateTime(due));
+    return '$date, $time';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final titleStyle = TextStyle(
-      color: task.isCompleted ? muted : navy,
-      fontSize: 15,
-      fontWeight: FontWeight.w700,
-      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-    );
+    final done = task.isCompleted;
+    final due = task.dueDate;
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
+      padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: border),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withAlpha(10),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TaskCheckbox(value: task.isCompleted, onTap: onToggle),
-          const SizedBox(width: 12),
+          _TaskCheckbox(value: done, onTap: onToggle),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(task.title, style: titleStyle),
-                const SizedBox(height: 5),
-                Text(
-                  task.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: muted,
-                    fontSize: 12,
-                    height: 1.3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: TextStyle(
+                      color: done ? subdued : navy,
+                      fontSize: 16,
+                      height: 1.5,
+                      fontWeight: FontWeight.w700,
+                      decoration: done ? TextDecoration.lineThrough : null,
+                    ),
                   ),
-                ),
-              ],
+                  if (task.description.isNotEmpty)
+                    Text(
+                      task.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: muted,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                  if (due != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 14,
+                          color: muted,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _dueLabel(context, due),
+                          style: const TextStyle(
+                            color: muted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 4),
-          IconButton(
-            onPressed: onEdit,
-            tooltip: 'Edit task',
-            icon: const Icon(Icons.edit_outlined, size: 19),
-            color: muted,
-            visualDensity: VisualDensity.compact,
-          ),
-          IconButton(
-            onPressed: onDelete,
-            tooltip: 'Delete task',
-            icon: const Icon(Icons.delete_outline_rounded, size: 20),
-            color: muted,
-            visualDensity: VisualDensity.compact,
+          PopupMenuButton<_TaskAction>(
+            tooltip: 'More actions',
+            icon: const Icon(Icons.more_vert_rounded, color: muted),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            onSelected: (action) => switch (action) {
+              _TaskAction.edit => onEdit(),
+              _TaskAction.delete => onDelete(),
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: _TaskAction.edit,
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 18, color: navy),
+                    SizedBox(width: 12),
+                    Text(
+                      'Edit',
+                      style: TextStyle(
+                        color: navy,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: _TaskAction.delete,
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline_rounded, size: 18, color: danger),
+                    SizedBox(width: 12),
+                    Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: danger,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -745,22 +922,33 @@ class _TaskCheckbox extends StatelessWidget {
       button: true,
       label: value ? 'Mark task as active' : 'Mark task as completed',
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: value ? blue : Colors.white,
-            border: Border.all(
-              color: value ? blue : const Color(0xFFB7C0D1),
-              width: 2,
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: value ? blue : Colors.white,
+                border: Border.all(
+                  color: value ? blue : const Color(0xFF94A3B8),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: value
+                  ? const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    )
+                  : null,
             ),
-            borderRadius: BorderRadius.circular(7),
           ),
-          child: value
-              ? const Icon(Icons.check_rounded, color: Colors.white, size: 17)
-              : null,
         ),
       ),
     );
@@ -768,38 +956,153 @@ class _TaskCheckbox extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.hasTasks, required this.onAdd});
+
+  final bool hasTasks;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
+    if (hasTasks) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: border),
+        ),
+        child: const Text(
+          'No tasks here',
+          style: TextStyle(color: muted, fontSize: 14),
+        ),
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.only(top: 52),
+      padding: const EdgeInsets.only(top: 24),
       child: Column(
         children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F0FF),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Icon(Icons.checklist_rounded, color: blue, size: 32),
-          ),
+          const _ChecklistIllustration(),
           const SizedBox(height: 16),
           const Text(
-            'No tasks here',
+            'Your day, your progress',
             style: TextStyle(
               color: navy,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           const Text(
-            'You are all caught up.',
-            style: TextStyle(color: muted, fontSize: 13),
+            'Add your first task and start building momentum.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: muted, fontSize: 14, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: const Text('Add Your First Task'),
+            style: FilledButton.styleFrom(
+              backgroundColor: navy,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              textStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChecklistIllustration extends StatelessWidget {
+  const _ChecklistIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget row({required bool checked, required double lineWidth}) {
+      return Row(
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: checked ? blue : Colors.transparent,
+              borderRadius: BorderRadius.circular(5),
+              border: checked
+                  ? null
+                  : Border.all(color: const Color(0xFF94A3B8), width: 2),
+            ),
+            child: checked
+                ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: lineWidth,
+            height: 8,
+            decoration: BoxDecoration(
+              color: checked ? const Color(0xFFC9D3EA) : border,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Semantics(
+      label: 'Checklist illustration',
+      child: SizedBox(
+        width: 96,
+        height: 112,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            Positioned(
+              top: 6,
+              child: Container(
+                width: 80,
+                height: 104,
+                padding: const EdgeInsets.fromLTRB(12, 28, 6, 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFC9D3EA), width: 2),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    row(checked: true, lineWidth: 30),
+                    const SizedBox(height: 10),
+                    row(checked: false, lineWidth: 24),
+                    const SizedBox(height: 10),
+                    row(checked: false, lineWidth: 30),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              child: Container(
+                width: 32,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: navy,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
