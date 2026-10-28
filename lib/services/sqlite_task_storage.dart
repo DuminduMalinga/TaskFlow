@@ -15,16 +15,24 @@ class SqliteTaskStorage implements TaskStorage {
     final path = p.join(await getDatabasesPath(), 'taskflow.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, _) => db.execute('''
         CREATE TABLE $_table (
           position INTEGER PRIMARY KEY,
           title TEXT NOT NULL,
           description TEXT NOT NULL,
           due_date TEXT,
-          is_completed INTEGER NOT NULL DEFAULT 0
+          is_completed INTEGER NOT NULL DEFAULT 0,
+          category TEXT NOT NULL DEFAULT 'personal'
         )
       '''),
+      onUpgrade: (db, oldVersion, _) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            "ALTER TABLE $_table ADD COLUMN category TEXT NOT NULL DEFAULT 'personal'",
+          );
+        }
+      },
     );
   }
 
@@ -39,6 +47,7 @@ class SqliteTaskStorage implements TaskStorage {
         description: row['description'] as String,
         dueDate: due == null ? null : DateTime.tryParse(due),
         isCompleted: (row['is_completed'] as int) == 1,
+        category: TaskCategory.fromName(row['category'] as String?),
       );
     }).toList();
   }
@@ -58,6 +67,7 @@ class SqliteTaskStorage implements TaskStorage {
           'description': task.description,
           'due_date': task.dueDate?.toIso8601String(),
           'is_completed': task.isCompleted ? 1 : 0,
+          'category': task.category.name,
         });
       }
       await batch.commit(noResult: true);

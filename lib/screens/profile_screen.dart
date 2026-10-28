@@ -10,7 +10,13 @@ import '../providers/profile_provider.dart';
 import '../theme/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({this.embedded = false, this.onSaved, super.key});
+
+  /// True when shown as a tab: no back button, and saving calls [onSaved].
+  final bool embedded;
+
+  /// Called after the profile is saved while shown as a tab.
+  final VoidCallback? onSaved;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -63,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: const Text('Remove photo'),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  setState(() => _photoBase64 = null);
+                  _setPhoto(null);
                 },
               ),
           ],
@@ -83,16 +89,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (picked == null) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
-      setState(() => _photoBase64 = base64Encode(bytes));
-    } catch (_) {
+      await _setPhoto(base64Encode(bytes));
+    } catch (error, stack) {
+      debugPrint('Photo pick failed: $error\n$stack');
       if (!mounted) return;
+      final isCamera = source == ImageSource.camera;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not load that photo'),
+        SnackBar(
+          content: Text(
+            isCamera
+                ? 'Could not open the camera. Check the camera permission.'
+                : 'Could not load that photo. Please try another one.',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
     }
+  }
+
+  /// Shows the photo and saves it to the profile straight away, so it is kept
+  /// even if the form itself is never saved.
+  Future<void> _setPhoto(String? photoBase64) async {
+    setState(() => _photoBase64 = photoBase64);
+    final provider = context.read<ProfileProvider>();
+    final saved = provider.profile;
+    await provider.update(
+      Profile(
+        name: saved.name,
+        mobile: saved.mobile,
+        email: saved.email,
+        photoBase64: photoBase64,
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -112,7 +140,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-    Navigator.pop(context);
+    if (widget.embedded) {
+      widget.onSaved?.call();
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -123,11 +155,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.embedded
+            ? null
+            : IconButton(
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Back',
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
         title: const Text(
           'Profile',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),

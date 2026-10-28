@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../models/task.dart';
 import '../theme/app_colors.dart';
+import '../widgets/category_picker.dart';
 
 class AddTaskResult {
   const AddTaskResult({
     required this.title,
     required this.description,
     this.dueDate,
+    this.category = TaskCategory.personal,
   });
 
   final String title;
   final String description;
   final DateTime? dueDate;
+  final TaskCategory category;
 }
 
 class AddTaskScreen extends StatefulWidget {
@@ -28,6 +32,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   late final TextEditingController _descriptionController;
   DateTime? _dueDate;
   TimeOfDay? _dueTime;
+  TaskCategory _category = TaskCategory.personal;
 
   @override
   void initState() {
@@ -110,6 +115,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         dueDate: _combinedDueDate(),
+        category: _category,
       ),
     );
   }
@@ -190,6 +196,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     hintText: 'Add details to help you complete this task',
                     alignLabelWithHint: true,
                   ),
+                ),
+                const SizedBox(height: 24),
+                const _FieldLabel(label: 'Category'),
+                const SizedBox(height: 8),
+                CategoryPicker(
+                  selected: _category,
+                  onSelected: (value) => setState(() => _category = value),
                 ),
                 const SizedBox(height: 24),
                 const _FieldLabel(label: 'Due date', required: true),

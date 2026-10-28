@@ -37,10 +37,16 @@ class TaskProvider extends ChangeNotifier {
     required String title,
     required String description,
     DateTime? dueDate,
+    TaskCategory category = TaskCategory.personal,
   }) {
     _tasks.insert(
       0,
-      Task(title: title, description: description, dueDate: dueDate),
+      Task(
+        title: title,
+        description: description,
+        dueDate: dueDate,
+        category: category,
+      ),
     );
     _commit();
   }
@@ -50,11 +56,13 @@ class TaskProvider extends ChangeNotifier {
     required String title,
     required String description,
     DateTime? dueDate,
+    TaskCategory? category,
   }) {
     task
       ..title = title
       ..description = description
-      ..dueDate = dueDate;
+      ..dueDate = dueDate
+      ..category = category ?? task.category;
     _commit();
   }
 

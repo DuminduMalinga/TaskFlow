@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../models/task.dart';
 import '../theme/app_colors.dart';
+import '../widgets/category_picker.dart';
 
 class EditTaskResult {
   const EditTaskResult({
     required this.title,
     required this.description,
     this.dueDate,
+    this.category = TaskCategory.personal,
   });
 
   final String title;
   final String description;
   final DateTime? dueDate;
+  final TaskCategory category;
 }
 
 class EditTaskScreen extends StatefulWidget {
@@ -31,6 +34,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late final TextEditingController _descriptionController;
   late DateTime? _dueDate;
   TimeOfDay? _dueTime;
+  TaskCategory _category = TaskCategory.personal;
 
   @override
   void initState() {
@@ -40,6 +44,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       text: widget.task.description,
     );
     _dueDate = widget.task.dueDate;
+    _category = widget.task.category;
     final due = widget.task.dueDate;
     // Midnight means "no time set".
     if (due != null && (due.hour != 0 || due.minute != 0)) {
@@ -121,6 +126,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         dueDate: _combinedDueDate(),
+        category: _category,
       ),
     );
   }
@@ -201,6 +207,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     hintText: 'Add details to help you complete this task',
                     alignLabelWithHint: true,
                   ),
+                ),
+                const SizedBox(height: 24),
+                const _EditFieldLabel(label: 'Category'),
+                const SizedBox(height: 8),
+                CategoryPicker(
+                  selected: _category,
+                  onSelected: (value) => setState(() => _category = value),
                 ),
                 const SizedBox(height: 24),
                 const _EditFieldLabel(label: 'Due date', required: true),

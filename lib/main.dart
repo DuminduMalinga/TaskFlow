@@ -7,7 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'providers/profile_provider.dart';
 import 'providers/task_provider.dart';
-import 'screens/task_home_screen.dart';
+import 'app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

@@ -8,7 +8,7 @@ import 'package:todo/providers/profile_provider.dart';
 import 'package:todo/providers/task_provider.dart';
 import 'package:todo/services/prefs_task_storage.dart';
 
-import 'package:todo/screens/task_home_screen.dart';
+import 'package:todo/app.dart';
 
 const _seedTasks = [
   {
@@ -56,7 +56,7 @@ void main() {
     await pumpApp(tester);
 
     expect(find.text('Good morning, Alex'), findsOneWidget);
-    expect(find.text('Daily progress'), findsOneWidget);
+    expect(find.text('DAILY PROGRESS'), findsOneWidget);
     expect(find.text('Design the dashboard'), findsOneWidget);
     expect(find.byTooltip('Add task'), findsOneWidget);
   });
@@ -253,5 +253,58 @@ void main() {
     expect(find.text('Enter your name'), findsOneWidget);
     expect(find.text('Enter a valid mobile number'), findsOneWidget);
     expect(find.text('Enter a valid email address'), findsOneWidget);
+  });
+
+  testWidgets('bottom navigation switches between tabs', (tester) async {
+    await pumpApp(tester);
+    expect(find.text('DAILY PROGRESS'), findsOneWidget);
+
+    await tester.tap(find.text('Tasks').last);
+    await tester.pumpAndSettle();
+    expect(find.text('DAILY PROGRESS'), findsNothing);
+    expect(find.text('Overdue'), findsWidgets);
+
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Save Profile'), findsOneWidget);
+  });
+
+  testWidgets('tasks tab filters and searches', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Tasks').last);
+    await tester.pumpAndSettle();
+
+    // Seed tasks have no due date, so they fall under Upcoming / Completed.
+    expect(find.text('Design the dashboard'), findsOneWidget);
+    await tester.tap(find.text('Overdue').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Design the dashboard'), findsNothing);
+
+    await tester.tap(find.text('All').first);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Search tasks'),
+      'plan',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Plan the day'), findsOneWidget);
+    expect(find.text('Design the dashboard'), findsNothing);
+  });
+
+  testWidgets('can pick a category when creating a task', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('Add task'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'e.g. Plan the team meeting'),
+      'Pay rent',
+    );
+    await tester.tap(find.text('Financial'));
+    await tester.pumpAndSettle();
+    await pickDate(tester);
+    await tester.tap(find.text('Create Task'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pay rent'), findsOneWidget);
+    expect(find.text('Financial'), findsOneWidget);
   });
 }

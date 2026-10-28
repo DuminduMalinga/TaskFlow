@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:todo/models/task.dart';
 
 void main() {
+  taskBucketTests();
   group('Task JSON', () {
     test('round-trips every field', () {
       final task = Task(
@@ -34,5 +35,34 @@ void main() {
       expect(task.dueDate, isNull);
       expect(task.isCompleted, isFalse);
     });
+  });
+}
+
+void taskBucketTests() {
+  final now = DateTime(2026, 10, 28, 12);
+  Task due(DateTime? date, {bool done = false}) =>
+      Task(title: 't', description: '', dueDate: date, isCompleted: done);
+
+  test('Task buckets by due date relative to today', () {
+    expect(due(DateTime(2026, 10, 27)).bucketAt(now), TaskBucket.overdue);
+    expect(due(DateTime(2026, 10, 28)).bucketAt(now), TaskBucket.today);
+    expect(due(DateTime(2026, 10, 28, 18)).bucketAt(now), TaskBucket.today);
+    expect(due(DateTime(2026, 10, 28, 9)).bucketAt(now), TaskBucket.overdue);
+    expect(due(DateTime(2026, 10, 29)).bucketAt(now), TaskBucket.tomorrow);
+    expect(due(DateTime(2026, 10, 30)).bucketAt(now), TaskBucket.upcoming);
+    expect(
+      due(DateTime(2026, 10, 1), done: true).bucketAt(now),
+      TaskBucket.completed,
+    );
+  });
+
+  test('Task category round-trips and defaults to personal', () {
+    final task = Task(
+      title: 't',
+      description: '',
+      category: TaskCategory.financial,
+    );
+    expect(Task.fromJson(task.toJson()).category, TaskCategory.financial);
+    expect(Task.fromJson({'title': 'x'}).category, TaskCategory.personal);
   });
 }

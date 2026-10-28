@@ -1,44 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'add_task_screen.dart';
 import 'completed_tasks_screen.dart';
-import 'edit_task_screen.dart';
-import 'profile_screen.dart';
 import '../models/task.dart';
 import '../providers/profile_provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
-import '../widgets/delete_task_dialog.dart';
-
-class TaskFlowApp extends StatelessWidget {
-  const TaskFlowApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'TaskFlow',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: background,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: blue,
-          primary: blue,
-          onPrimary: Colors.white,
-          surface: Colors.white,
-        ),
-        fontFamily: 'Inter',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: background,
-          foregroundColor: navy,
-          elevation: 0,
-        ),
-      ),
-      home: const TaskHomePage(),
-    );
-  }
-}
+import '../widgets/task_actions.dart';
+import '../widgets/task_card.dart';
 
 enum TaskFilter { all, active, completed }
 
@@ -53,7 +22,9 @@ enum TaskSort {
 }
 
 class TaskHomePage extends StatefulWidget {
-  const TaskHomePage({super.key});
+  const TaskHomePage({required this.onOpenProfile, super.key});
+
+  final VoidCallback onOpenProfile;
 
   @override
   State<TaskHomePage> createState() => _TaskHomePageState();
@@ -122,59 +93,12 @@ class _TaskHomePageState extends State<TaskHomePage> {
     return '${weekdays[now.weekday - 1]}\n${now.day} ${months[now.month - 1]}';
   }
 
-  Future<void> _openTaskEditor({Task? task}) async {
-    if (task == null) {
-      final result = await Navigator.push<AddTaskResult>(
-        context,
-        MaterialPageRoute(builder: (_) => const AddTaskScreen()),
-      );
-      if (!mounted || result == null) return;
-      context.read<TaskProvider>().addTask(
-        title: result.title,
-        description: result.description,
-        dueDate: result.dueDate,
-      );
-      return;
-    }
-
-    final result = await Navigator.push<EditTaskResult>(
-      context,
-      MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
-    );
-    if (!mounted || result == null) return;
-    context.read<TaskProvider>().updateTask(
-      task,
-      title: result.title,
-      description: result.description,
-      dueDate: result.dueDate,
-    );
-  }
-
   Future<void> _openCompletedTasks() async {
     await Navigator.push<void>(
       context,
       MaterialPageRoute(builder: (_) => const CompletedTasksScreen()),
     );
     if (mounted) setState(() => _filter = TaskFilter.all);
-  }
-
-  Future<void> _deleteTask(Task task) async {
-    final shouldDelete = await DeleteTaskDialog.show(context);
-    if (shouldDelete != true || !mounted) return;
-    final provider = context.read<TaskProvider>();
-    final index = provider.deleteTask(task);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Task deleted'),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () => provider.restoreTask(task, index),
-          ),
-        ),
-      );
   }
 
   @override
@@ -186,7 +110,12 @@ class _TaskHomePageState extends State<TaskHomePage> {
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              sliver: SliverToBoxAdapter(child: _Header(dateLabel: _dateLabel)),
+              sliver: SliverToBoxAdapter(
+                child: _Header(
+                  dateLabel: _dateLabel,
+                  onOpenProfile: widget.onOpenProfile,
+                ),
+              ),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -239,7 +168,7 @@ class _TaskHomePageState extends State<TaskHomePage> {
                   ? SliverToBoxAdapter(
                       child: _EmptyState(
                         hasTasks: _tasks.isNotEmpty,
-                        onAdd: _openTaskEditor,
+                        onAdd: () => openTaskEditor(context),
                       ),
                     )
                   : SliverList.separated(
@@ -250,8 +179,8 @@ class _TaskHomePageState extends State<TaskHomePage> {
                           task: task,
                           onToggle: () =>
                               context.read<TaskProvider>().toggleTask(task),
-                          onEdit: () => _openTaskEditor(task: task),
-                          onDelete: () => _deleteTask(task),
+                          onEdit: () => openTaskEditor(context, task: task),
+                          onDelete: () => deleteTaskWithUndo(context, task),
                         );
                       },
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
@@ -264,7 +193,9 @@ class _TaskHomePageState extends State<TaskHomePage> {
       floatingActionButton: _tasks.isEmpty
           ? null
           : FloatingActionButton(
-              onPressed: _openTaskEditor,
+              // Both tabs have one, so they can't share the default hero tag.
+              heroTag: null,
+              onPressed: () => openTaskEditor(context),
               backgroundColor: blue,
               foregroundColor: Colors.white,
               elevation: 4,
@@ -346,9 +277,10 @@ class _SearchSortBar extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.dateLabel});
+  const _Header({required this.dateLabel, required this.onOpenProfile});
 
   final String dateLabel;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -361,10 +293,7 @@ class _Header extends StatelessWidget {
           label: 'Open profile',
           child: GestureDetector(
             key: const Key('profile-avatar'),
-            onTap: () => Navigator.push<void>(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ),
+            onTap: onOpenProfile,
             child: Container(
               width: 48,
               height: 48,
@@ -734,219 +663,6 @@ class _FilterTab extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-enum _TaskAction { edit, delete }
-
-class TaskCard extends StatelessWidget {
-  const TaskCard({
-    required this.task,
-    required this.onToggle,
-    required this.onEdit,
-    required this.onDelete,
-    super.key,
-  });
-
-  final Task task;
-  final VoidCallback onToggle;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  static String _dueLabel(BuildContext context, DateTime due) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final date = '${months[due.month - 1]} ${due.day}';
-    // Midnight means "no time set".
-    if (due.hour == 0 && due.minute == 0) return date;
-    final time = MaterialLocalizations.of(
-      context,
-    ).formatTimeOfDay(TimeOfDay.fromDateTime(due));
-    return '$date, $time';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final done = task.isCompleted;
-    final due = task.dueDate;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
-        boxShadow: [
-          BoxShadow(
-            color: navy.withAlpha(10),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _TaskCheckbox(value: done, onTap: onToggle),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.title,
-                    style: TextStyle(
-                      color: done ? subdued : navy,
-                      fontSize: 16,
-                      height: 1.5,
-                      fontWeight: FontWeight.w700,
-                      decoration: done ? TextDecoration.lineThrough : null,
-                    ),
-                  ),
-                  if (task.description.isNotEmpty)
-                    Text(
-                      task.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: muted,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                  if (due != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          size: 14,
-                          color: muted,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _dueLabel(context, due),
-                          style: const TextStyle(
-                            color: muted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          PopupMenuButton<_TaskAction>(
-            tooltip: 'More actions',
-            icon: const Icon(Icons.more_vert_rounded, color: muted),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            onSelected: (action) => switch (action) {
-              _TaskAction.edit => onEdit(),
-              _TaskAction.delete => onDelete(),
-            },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
-                value: _TaskAction.edit,
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_outlined, size: 18, color: navy),
-                    SizedBox(width: 12),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: navy,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: _TaskAction.delete,
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline_rounded, size: 18, color: danger),
-                    SizedBox(width: 12),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: danger,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TaskCheckbox extends StatelessWidget {
-  const _TaskCheckbox({required this.value, required this.onTap});
-
-  final bool value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: value ? 'Mark task as active' : 'Mark task as completed',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: SizedBox(
-          width: 48,
-          height: 48,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: value ? blue : Colors.white,
-                border: Border.all(
-                  color: value ? blue : const Color(0xFF94A3B8),
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: value
-                  ? const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    )
-                  : null,
             ),
           ),
         ),
