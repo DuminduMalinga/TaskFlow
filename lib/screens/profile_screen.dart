@@ -9,6 +9,7 @@ import '../models/profile.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/organic_header.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({this.embedded = false, this.onSaved, super.key});
@@ -168,118 +169,129 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final photo = _photoBase64 == null ? null : base64Decode(_photoBase64!);
     final name = _nameController.text.trim();
     return Scaffold(
-      backgroundColor: context.colors.card,
-      appBar: AppBar(
-        backgroundColor: context.colors.card,
-        automaticallyImplyLeading: false,
-        leading: widget.embedded
-            ? null
-            : IconButton(
-                onPressed: () => Navigator.pop(context),
-                tooltip: 'Back',
-                icon: const Icon(Icons.arrow_back_rounded),
+      body: Column(
+        children: [
+          OrganicHeader(
+            leading: widget.embedded
+                ? null
+                : HeaderChip(
+                    label: 'Back',
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.pop(context),
+                  ),
+            title: 'Profile',
+            subtitle: 'Your details stay on this device.',
+            minHeight: 170,
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: _PhotoPicker(
+                          photo: photo,
+                          initial: name.isEmpty ? '?' : name[0].toUpperCase(),
+                          onTap: _pickPhoto,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      const _Label('User Name', required: true),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        maxLength: 40,
+                        onChanged: (_) => setState(() {}),
+                        decoration: const InputDecoration(
+                          hintText: 'Your name',
+                        ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                            ? 'Enter your name'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      const _Label('Mobile number'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _mobileController,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          hintText: '+94 77 123 4567',
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) return null;
+                          final digits = text.replaceAll(
+                            RegExp(r'[\s\-()]'),
+                            '',
+                          );
+                          return RegExp(r'^\+?\d{7,15}$').hasMatch(digits)
+                              ? null
+                              : 'Enter a valid mobile number';
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      const _Label('Email'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          hintText: 'name@example.com',
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) return null;
+                          return RegExp(
+                                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                              ).hasMatch(text)
+                              ? null
+                              : 'Enter a valid email address';
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      const _Label('Appearance'),
+                      const SizedBox(height: 8),
+                      const _AppearancePicker(),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: FilledButton(
+                          onPressed: _save,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: context.colors.accent,
+                            foregroundColor: context.colors.onAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: const Text(
+                            'Save Profile',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: _PhotoPicker(
-                    photo: photo,
-                    initial: name.isEmpty ? '?' : name[0].toUpperCase(),
-                    onTap: _pickPhoto,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                const _Label('User Name', required: true),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _nameController,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  maxLength: 40,
-                  onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(hintText: 'Your name'),
-                  validator: (value) => value == null || value.trim().isEmpty
-                      ? 'Enter your name'
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                const _Label('Mobile number'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _mobileController,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    hintText: '+94 77 123 4567',
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return null;
-                    final digits = text.replaceAll(RegExp(r'[\s\-()]'), '');
-                    return RegExp(r'^\+?\d{7,15}$').hasMatch(digits)
-                        ? null
-                        : 'Enter a valid mobile number';
-                  },
-                ),
-                const SizedBox(height: 24),
-                const _Label('Email'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    hintText: 'name@example.com',
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return null;
-                    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)
-                        ? null
-                        : 'Enter a valid email address';
-                  },
-                ),
-                const SizedBox(height: 16),
-                const _Label('Appearance'),
-                const SizedBox(height: 8),
-                const _AppearancePicker(),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: _save,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: context.colors.accent,
-                      foregroundColor: context.colors.onAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Save Profile',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -307,13 +319,13 @@ class _PhotoPicker extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 56,
-              backgroundColor: context.colors.accent,
+              backgroundColor: AppColors.header,
               backgroundImage: photo == null ? null : MemoryImage(photo!),
               child: photo == null
                   ? Text(
                       initial,
                       style: TextStyle(
-                        color: context.colors.onAccent,
+                        color: AppColors.onHeader,
                         fontSize: 40,
                         fontWeight: FontWeight.w800,
                       ),
@@ -328,7 +340,10 @@ class _PhotoPicker extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.colors.accent,
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.colors.card, width: 3),
+                  border: Border.all(
+                    color: context.colors.background,
+                    width: 3,
+                  ),
                 ),
                 child: Icon(
                   Icons.camera_alt_rounded,
@@ -392,8 +407,9 @@ class _AppearancePicker extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: colors.border,
-        borderRadius: BorderRadius.circular(16),
+        color: colors.field,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -412,7 +428,7 @@ class _AppearancePicker extends StatelessWidget {
                       color: provider.mode == mode
                           ? colors.accent
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

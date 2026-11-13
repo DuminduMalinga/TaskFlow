@@ -4,9 +4,13 @@ import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/organic_header.dart';
 
 class CompletedTasksScreen extends StatelessWidget {
-  const CompletedTasksScreen({super.key});
+  const CompletedTasksScreen({this.embedded = false, super.key});
+
+  /// True when shown as a tab: no back button.
+  final bool embedded;
 
   void _reactivate(BuildContext context, Task task) {
     context.read<TaskProvider>().toggleTask(task);
@@ -22,37 +26,47 @@ class CompletedTasksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedTasks = context.watch<TaskProvider>().completedTasks;
     return Scaffold(
-      backgroundColor: context.colors.card,
-      appBar: AppBar(
-        backgroundColor: context.colors.card,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
-        title: const Text(
-          'Completed Tasks',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: SafeArea(
-        child: completedTasks.isEmpty
-            ? const _CompletedEmptyState()
-            : ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                itemCount: completedTasks.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _CompletedSummary(count: completedTasks.length);
-                  }
-                  final task = completedTasks[index - 1];
-                  return _CompletedTaskCard(
-                    task: task,
-                    onReactivate: () => _reactivate(context, task),
-                  );
-                },
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-              ),
+      body: Column(
+        children: [
+          OrganicHeader(
+            leading: embedded
+                ? null
+                : HeaderChip(
+                    label: 'Back',
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.pop(context),
+                  ),
+            eyebrow: 'Nice work',
+            title: 'Completed Tasks',
+            titleSize: 30,
+            minHeight: 170,
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              bottom: false,
+              child: completedTasks.isEmpty
+                  ? const _CompletedEmptyState()
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                      itemCount: completedTasks.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _CompletedSummary(
+                            count: completedTasks.length,
+                          );
+                        }
+                        final task = completedTasks[index - 1];
+                        return _CompletedTaskCard(
+                          task: task,
+                          onReactivate: () => _reactivate(context, task),
+                        );
+                      },
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -91,7 +105,7 @@ class _CompletedTaskCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
       decoration: BoxDecoration(
         color: context.colors.card,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: context.colors.border),
       ),
       child: Row(
@@ -107,7 +121,7 @@ class _CompletedTaskCard extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                   color: context.colors.accent,
-                  borderRadius: BorderRadius.circular(7),
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_rounded,
@@ -149,7 +163,7 @@ class _CompletedTaskCard extends StatelessWidget {
             onPressed: onReactivate,
             tooltip: 'Mark task active',
             icon: const Icon(Icons.refresh_rounded, size: 20),
-            color: context.colors.accent,
+            color: context.colors.muted,
             visualDensity: VisualDensity.compact,
           ),
         ],
@@ -178,7 +192,7 @@ class _CompletedEmptyState extends StatelessWidget {
               ),
               child: Icon(
                 Icons.task_alt_rounded,
-                color: context.colors.accent,
+                color: context.colors.text,
                 size: 38,
               ),
             ),

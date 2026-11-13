@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The Donezo app icon: a "D" with a checkmark inside, on a navy tile.
+/// The Donezo app icon: a "D" with a checkmark inside, on an ink tile.
 class DonezoLogo extends StatelessWidget {
   const DonezoLogo({super.key, this.size = 96});
 
@@ -38,9 +38,9 @@ class DonezoWordmark extends StatelessWidget {
 }
 
 class _LogoPainter extends CustomPainter {
-  static const _navy = Color(0xFF172554);
-  static const _violet = Color(0xFF8B7AF6);
-  static const _sky = Color(0xFF38BDF8);
+  static const _navy = Color(0xFF17140F);
+  static const _violet = Color(0xFFF4B618);
+  static const _sky = Color(0xFFFFD866);
 
   @override
   void paint(Canvas canvas, Size size) {

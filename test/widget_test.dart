@@ -46,6 +46,7 @@ Future<void> pumpApp(WidgetTester tester) async {
       child: const DonezoApp(),
     ),
   );
+  await tester.pump(const Duration(seconds: 2));
   await tester.pumpAndSettle();
 }
 
@@ -265,19 +266,19 @@ void main() {
     await pumpApp(tester);
     expect(find.text('DAILY PROGRESS'), findsOneWidget);
 
-    await tester.tap(find.text('Tasks').last);
+    await tester.tap(find.byTooltip('Tasks'));
     await tester.pumpAndSettle();
     expect(find.text('DAILY PROGRESS'), findsNothing);
     expect(find.text('Overdue'), findsWidgets);
 
-    await tester.tap(find.text('Profile').last);
+    await tester.tap(find.byTooltip('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('Save Profile'), findsOneWidget);
   });
 
   testWidgets('tasks tab filters and searches', (tester) async {
     await pumpApp(tester);
-    await tester.tap(find.text('Tasks').last);
+    await tester.tap(find.byTooltip('Tasks'));
     await tester.pumpAndSettle();
 
     // Seed tasks have no due date, so they fall under Upcoming / Completed.
@@ -340,8 +341,9 @@ void main() {
         child: const DonezoApp(),
       ),
     );
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile').last);
+    await tester.tap(find.byTooltip('Profile'));
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextFormField, 'Sam Lee'), findsOneWidget);
@@ -368,7 +370,7 @@ void welcomeTests() {
         child: const DonezoApp(),
       ),
     );
-    expect(find.text('Make it happen.'), findsOneWidget);
+    expect(find.text('Capture it. Do it. Done.'), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 3));
     expect(find.text('Your day.\nYour way.'), findsOneWidget);
 

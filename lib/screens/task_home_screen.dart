@@ -7,6 +7,7 @@ import '../providers/profile_provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/task_actions.dart';
+import '../widgets/organic_header.dart';
 import '../widgets/task_card.dart';
 
 enum TaskFilter { all, active, completed }
@@ -90,7 +91,7 @@ class _TaskHomePageState extends State<TaskHomePage> {
       'Dec',
     ];
     final now = DateTime.now();
-    return '${weekdays[now.weekday - 1]}\n${now.day} ${months[now.month - 1]}';
+    return '${weekdays[now.weekday - 1]}, ${now.day} ${months[now.month - 1]}';
   }
 
   Future<void> _openCompletedTasks() async {
@@ -104,22 +105,27 @@ class _TaskHomePageState extends State<TaskHomePage> {
   @override
   Widget build(BuildContext context) {
     final progress = _tasks.isEmpty ? 0.0 : _completedCount / _tasks.length;
+    final profile = context.watch<ProfileProvider>().profile;
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _Header(
-                  dateLabel: _dateLabel,
-                  onOpenProfile: widget.onOpenProfile,
-                ),
-              ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: OrganicHeader(
+              eyebrow: _dateLabel,
+              title: 'Good morning, ${profile.firstName}',
+              titleSize: 30,
+              subtitle: 'Small steps today, big wins tomorrow.',
+              leading: _Avatar(onTap: widget.onOpenProfile),
+              minHeight: 200,
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              sliver: SliverToBoxAdapter(
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            sliver: SliverToBoxAdapter(
+              // Pulls the card up so it overlaps the header's curved edge.
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                heightFactor: 0.82,
                 child: ProgressCard(
                   completed: _completedCount,
                   total: _tasks.length,
@@ -127,84 +133,68 @@ class _TaskHomePageState extends State<TaskHomePage> {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _StatsRow(
-                  total: _tasks.length,
-                  completed: _completedCount,
-                  remaining: _tasks.length - _completedCount,
-                ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: _StatsRow(
+                total: _tasks.length,
+                completed: _completedCount,
+                remaining: _tasks.length - _completedCount,
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: FilterTabs(
-                  selected: _filter,
-                  onSelected: (filter) {
-                    if (filter == TaskFilter.completed) {
-                      _openCompletedTasks();
-                    } else {
-                      setState(() => _filter = filter);
-                    }
-                  },
-                ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: FilterTabs(
+                selected: _filter,
+                onSelected: (filter) {
+                  if (filter == TaskFilter.completed) {
+                    _openCompletedTasks();
+                  } else {
+                    setState(() => _filter = filter);
+                  }
+                },
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _SearchSortBar(
-                  sort: _sort,
-                  onQueryChanged: (value) => setState(() => _query = value),
-                  onSortChanged: (value) => setState(() => _sort = value),
-                ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: _SearchSortBar(
+                sort: _sort,
+                onQueryChanged: (value) => setState(() => _query = value),
+                onSortChanged: (value) => setState(() => _sort = value),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-              sliver: _visibleTasks.isEmpty
-                  ? SliverToBoxAdapter(
-                      child: _EmptyState(
-                        hasTasks: _tasks.isNotEmpty,
-                        onAdd: () => openTaskEditor(context),
-                      ),
-                    )
-                  : SliverList.separated(
-                      itemCount: _visibleTasks.length,
-                      itemBuilder: (context, index) {
-                        final task = _visibleTasks[index];
-                        return TaskCard(
-                          task: task,
-                          onToggle: () =>
-                              context.read<TaskProvider>().toggleTask(task),
-                          onEdit: () => openTaskEditor(context, task: task),
-                          onDelete: () => deleteTaskWithUndo(context, task),
-                        );
-                      },
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
+            sliver: _visibleTasks.isEmpty
+                ? SliverToBoxAdapter(
+                    child: _EmptyState(
+                      hasTasks: _tasks.isNotEmpty,
+                      onAdd: () => openTaskEditor(context),
                     ),
-            ),
-          ],
-        ),
+                  )
+                : SliverList.separated(
+                    itemCount: _visibleTasks.length,
+                    itemBuilder: (context, index) {
+                      final task = _visibleTasks[index];
+                      return TaskCard(
+                        task: task,
+                        onToggle: () =>
+                            context.read<TaskProvider>().toggleTask(task),
+                        onEdit: () => openTaskEditor(context, task: task),
+                        onDelete: () => deleteTaskWithUndo(context, task),
+                      );
+                    },
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  ),
+          ),
+        ],
       ),
-      // The empty state has its own "Add Your First Task" button.
-      floatingActionButton: _tasks.isEmpty
-          ? null
-          : FloatingActionButton(
-              // Both tabs have one, so they can't share the default hero tag.
-              heroTag: null,
-              onPressed: () => openTaskEditor(context),
-              backgroundColor: context.colors.accent,
-              foregroundColor: context.colors.onAccent,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              tooltip: 'Add task',
-              child: const Icon(Icons.add_rounded, size: 30),
-            ),
     );
   }
 }
@@ -223,7 +213,7 @@ class _SearchSortBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outline = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       borderSide: BorderSide(color: context.colors.border),
     );
     return Row(
@@ -268,7 +258,7 @@ class _SearchSortBar extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: context.colors.card,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: context.colors.border),
             ),
             child: Icon(Icons.sort_rounded, color: context.colors.text),
@@ -279,99 +269,45 @@ class _SearchSortBar extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header({required this.dateLabel, required this.onOpenProfile});
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.onTap});
 
-  final String dateLabel;
-  final VoidCallback onOpenProfile;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<ProfileProvider>().profile;
     final photo = profile.photoBytes;
-    return Row(
-      children: [
-        Semantics(
-          button: true,
-          label: 'Open profile',
-          child: GestureDetector(
-            key: const Key('profile-avatar'),
-            onTap: onOpenProfile,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: context.colors.accent,
-                borderRadius: BorderRadius.circular(16),
-                image: photo == null
-                    ? null
-                    : DecorationImage(
-                        image: MemoryImage(photo),
-                        fit: BoxFit.cover,
-                      ),
-              ),
-              child: photo == null
-                  ? Center(
-                      child: Text(
-                        profile.initial,
-                        style: TextStyle(
-                          color: context.colors.onAccent,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Good morning, ${profile.firstName}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: context.colors.text,
-                  fontSize: 20,
-                  height: 1.4,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                'Small steps today, big wins tomorrow.',
-                style: TextStyle(
-                  color: context.colors.muted,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Semantics(
+      button: true,
+      label: 'Open profile',
+      child: GestureDetector(
+        key: const Key('profile-avatar'),
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
-            color: context.colors.card,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: context.colors.border),
+            color: AppColors.onHeader,
+            borderRadius: BorderRadius.circular(16),
+            image: photo == null
+                ? null
+                : DecorationImage(image: MemoryImage(photo), fit: BoxFit.cover),
           ),
-          child: Text(
-            dateLabel,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: context.colors.text,
-              fontSize: 12,
-              height: 1.35,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: photo == null
+              ? Center(
+                  child: Text(
+                    profile.initial,
+                    style: const TextStyle(
+                      color: AppColors.header,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                )
+              : null,
         ),
-      ],
+      ),
     );
   }
 }
@@ -390,12 +326,9 @@ class ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The card is dark in both themes, so it uses the light-on-dark accent.
-    final heroAccent = AppColors.dark.accent;
-    final colors = context.colors;
-    final track = Theme.of(context).brightness == Brightness.dark
-        ? colors.progressTrack
-        : colors.progressTrack.withAlpha(64);
+    // The card is dark in both themes, so it uses the amber accent.
+    final heroAccent = AppColors.header;
+    final track = AppColors.dark.progressTrack;
     final percent = (progress * 100).round();
     final remaining = total - completed;
     final caption = total == 0
@@ -406,13 +339,14 @@ class ProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.colors.hero,
-        borderRadius: BorderRadius.circular(18),
+        color: const Color(0xFF17140F),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: Colors.white.withAlpha(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(40),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withAlpha(60),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -551,20 +485,20 @@ class _Stat extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: context.colors.card,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(color: context.colors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
-                color: context.colors.accentTint,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.header,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: context.colors.accent, size: 18),
+              child: Icon(icon, color: AppColors.onHeader, size: 18),
             ),
             const SizedBox(height: 12),
             Text(
@@ -606,8 +540,9 @@ class FilterTabs extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.colors.border,
-        borderRadius: BorderRadius.circular(16),
+        color: context.colors.field,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         children: [
@@ -658,16 +593,7 @@ class _FilterTab extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: selected ? context.colors.accent : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ]
-                  : null,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
               label,
@@ -699,8 +625,7 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: context.colors.card,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(color: context.colors.border),
         ),
         child: Text(
@@ -741,14 +666,14 @@ class _EmptyState extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: context.colors.accent,
               foregroundColor: context.colors.onAccent,
-              minimumSize: const Size(0, 48),
+              minimumSize: const Size(0, 52),
               padding: const EdgeInsets.symmetric(horizontal: 24),
               textStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
           ),

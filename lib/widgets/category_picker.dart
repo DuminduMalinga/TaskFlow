@@ -10,6 +10,14 @@ IconData categoryIcon(TaskCategory category) => switch (category) {
   TaskCategory.other => Icons.label_outline_rounded,
 };
 
+/// Each category keeps one colour everywhere it appears.
+Color categoryColor(TaskCategory category) => switch (category) {
+  TaskCategory.work => const Color(0xFFF4B618),
+  TaskCategory.personal => const Color(0xFFE9875E),
+  TaskCategory.financial => const Color(0xFF8DB79F),
+  TaskCategory.other => const Color(0xFFA497E6),
+};
+
 /// Single-choice chips for picking which category a task belongs to.
 class CategoryPicker extends StatelessWidget {
   const CategoryPicker({
@@ -63,7 +71,7 @@ class _CategoryChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: selected ? context.colors.accent : context.colors.card,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected ? context.colors.accent : context.colors.border,
             ),
@@ -76,7 +84,7 @@ class _CategoryChip extends StatelessWidget {
                 size: 18,
                 color: selected
                     ? context.colors.onAccent
-                    : context.colors.muted,
+                    : categoryColor(category),
               ),
               const SizedBox(width: 8),
               Text(

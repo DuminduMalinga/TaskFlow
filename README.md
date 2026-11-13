@@ -12,8 +12,20 @@ The Donezo helps you capture, organize, and complete everyday work without requi
 - Keep active and completed tasks easy to find
 - Personalize the app with a local profile
 - Follow the system theme or choose light and dark mode
+- Navigate with a floating dock and a one-tap amber add button
 - Persist data locally with no backend or sign-in required
 - Use the same Flutter codebase across mobile, desktop, and web
+
+## Design
+
+The Donezo uses an amber-and-ink visual language:
+
+- **Amber headers.** Every screen opens on an amber header with an organic, curved bottom edge that holds the title, greeting or search field.
+- **Floating pill dock.** Navigation is a translucent, rounded dock with Home, Tasks, Completed and Profile, and a raised amber **+** button in the center for adding tasks.
+- **Soft, rounded cards.** Tasks, stats and the daily progress card use large corner radii. The progress card is dark in both themes and overlaps the header's curve.
+- **Category colors.** Each category keeps one color everywhere: Work amber, Personal coral, Financial sage and Other lavender.
+- **Light and dark themes.** A warm ink dark theme and a cream light theme share the same amber accent. Choose System, Light or Dark in Profile.
+- **Branding.** The splash screen is amber with a dark wave, and the app mark is an amber "D" with a check on an ink tile.
 
 ## Screenshots
 
@@ -33,6 +45,12 @@ The Donezo helps you capture, organize, and complete everyday work without requi
 | :---: | :---: | :---: |
 | ![Edit Task](docs/screenshots/edit_task.png) | ![Completed](docs/screenshots/completed.png) | ![Profile](docs/screenshots/profile.png) |
 
+### Dark theme
+
+| Home | Tasks |
+| :---: | :---: |
+| ![Home, dark](docs/screenshots/home_dark.png) | ![Tasks, dark](docs/screenshots/tasks_dark.png) |
+
 ## Tech stack
 
 - **Flutter** with Material 3
@@ -42,6 +60,7 @@ The Donezo helps you capture, organize, and complete everyday work without requi
 - **SQLite FFI** through `sqflite_common_ffi` for Windows, macOS, and Linux
 - **SharedPreferences** for profile and theme settings, plus web task storage
 - **Inter** for the application typography
+- A custom `AppColors` theme extension that drives both the light and dark themes
 
 ## Architecture
 
@@ -51,10 +70,10 @@ The project is organized by responsibility:
 lib/
 ├── models/       Domain models such as Task and Profile
 ├── providers/    ChangeNotifier state for tasks, profiles, and themes
-├── screens/      Home, task, completed-task, edit, and profile views
+├── screens/      Shell with floating dock, home, tasks, completed, edit, and profile views
 ├── services/     Storage abstractions and platform-specific persistence
-├── theme/        Shared colors and theme configuration
-└── widgets/      Reusable task and form components
+├── theme/        Shared colors (AppColors theme extension) and theme configuration
+└── widgets/      Reusable components: organic header, task card, category picker, logo
 ```
 
 `TaskStorage` selects the persistence implementation at runtime. Native builds use SQLite, while web builds use a SharedPreferences-backed implementation because browser environments do not provide native SQLite.

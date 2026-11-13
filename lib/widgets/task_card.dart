@@ -53,15 +53,8 @@ class TaskCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
       decoration: BoxDecoration(
         color: context.colors.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: context.colors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,6 +95,7 @@ class TaskCard extends StatelessWidget {
                       _MetaLabel(
                         icon: categoryIcon(task.category),
                         text: task.category.label,
+                        iconColor: categoryColor(task.category),
                       ),
                       if (due != null)
                         _MetaLabel(
@@ -206,7 +200,7 @@ class _TaskCheckbox extends StatelessWidget {
                   color: value ? context.colors.accent : context.colors.muted,
                   width: 2,
                 ),
-                borderRadius: BorderRadius.circular(8),
+                shape: BoxShape.circle,
               ),
               child: value
                   ? Icon(
@@ -224,11 +218,17 @@ class _TaskCheckbox extends StatelessWidget {
 }
 
 class _MetaLabel extends StatelessWidget {
-  const _MetaLabel({required this.icon, required this.text, this.color});
+  const _MetaLabel({
+    required this.icon,
+    required this.text,
+    this.color,
+    this.iconColor,
+  });
 
   final IconData icon;
   final String text;
   final Color? color;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +236,7 @@ class _MetaLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
+        Icon(icon, size: 14, color: iconColor ?? color),
         const SizedBox(width: 4),
         Text(
           text,

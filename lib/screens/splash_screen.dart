@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../widgets/donezo_logo.dart';
 
-/// Launch screen: logo, wordmark and tagline on deep indigo.
+/// Launch screen: logo, wordmark and tagline on amber.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
-  static const background = Color(0xFF111827);
+  static const background = AppColors.header;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -32,17 +33,12 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: SplashScreen.background,
       body: Stack(
         children: [
-          Center(
-            child: Container(
-              width: 360,
-              height: 360,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Color(0x553B82F6), Color(0x003B82F6)],
-                ),
-              ),
-            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 220,
+            child: CustomPaint(painter: _WavePainter()),
           ),
           Center(
             child: FadeTransition(
@@ -52,38 +48,19 @@ class _SplashScreenState extends State<SplashScreen>
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    DonezoLogo(size: 112),
-                    SizedBox(height: 24),
-                    DonezoWordmark(color: Colors.white, fontSize: 40),
-                    SizedBox(height: 8),
+                    DonezoLogo(size: 96),
+                    SizedBox(height: 20),
+                    DonezoWordmark(color: AppColors.onHeader, fontSize: 36),
+                    SizedBox(height: 6),
                     Text(
-                      'Make it happen.',
+                      'Capture it. Do it. Done.',
                       style: TextStyle(
-                        color: Color(0xFFA5B4FC),
+                        color: AppColors.onHeader,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        letterSpacing: 0.4,
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 64,
-            child: Center(
-              child: SizedBox(
-                width: 48,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: const LinearProgressIndicator(
-                    minHeight: 4,
-                    color: Color(0xFF818CF8),
-                    backgroundColor: Color(0xFF1F2937),
-                  ),
                 ),
               ),
             ),
@@ -92,4 +69,24 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
+}
+
+/// The dark wave along the bottom edge of the splash.
+class _WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path()
+      ..moveTo(0, h * 0.4)
+      ..cubicTo(w * 0.17, h * 0.27, w * 0.35, h * 0.64, w * 0.58, h * 0.5)
+      ..cubicTo(w * 0.78, h * 0.38, w * 0.87, h * 0.18, w, h * 0.27)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(path, Paint()..color = AppColors.onHeader);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

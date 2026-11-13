@@ -17,38 +17,41 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.danger,
     required this.dangerTint,
     required this.hero,
+    required this.field,
   });
 
   static const light = AppColors(
-    accent: Color(0xFF4F46E5),
-    onAccent: Color(0xFFFFFFFF),
-    accentTint: Color(0xFFEEF2FF),
-    background: Color(0xFFF5F7FB),
+    accent: Color(0xFFF4B618),
+    onAccent: Color(0xFF17140F),
+    accentTint: Color(0x33F4B618),
+    background: Color(0xFFF5F0E4),
     card: Color(0xFFFFFFFF),
-    text: Color(0xFF172554),
-    muted: Color(0xFF64748B),
-    border: Color(0xFFE2E8F0),
-    progressTrack: Color(0xFFC7D2FE),
-    completed: Color(0xFF64748B),
-    danger: Color(0xFFDC2626),
-    dangerTint: Color(0xFFFEE2E2),
-    hero: Color(0xFF172554),
+    text: Color(0xFF1E1A13),
+    muted: Color(0xFF7C735F),
+    border: Color(0x1417140F),
+    progressTrack: Color(0xFFE6DCC4),
+    completed: Color(0xFF7C735F),
+    danger: Color(0xFFD9562F),
+    dangerTint: Color(0x24F07B5C),
+    hero: Color(0xFF17140F),
+    field: Color(0xFFF7F2E7),
   );
 
   static const dark = AppColors(
-    accent: Color(0xFF818CF8),
-    onAccent: Color(0xFF111827),
-    accentTint: Color(0x29818CF8),
-    background: Color(0xFF111827),
-    card: Color(0xFF1F2937),
-    text: Color(0xFFF9FAFB),
-    muted: Color(0xFF9CA3AF),
-    border: Color(0xFF374151),
-    progressTrack: Color(0xFF374151),
-    completed: Color(0xFF9CA3AF),
-    danger: Color(0xFFF87171),
-    dangerTint: Color(0x29F87171),
-    hero: Color(0xFF1F2937),
+    accent: Color(0xFFF4B618),
+    onAccent: Color(0xFF17140F),
+    accentTint: Color(0x29F4B618),
+    background: Color(0xFF17140F),
+    card: Color(0xFF25221C),
+    text: Color(0xFFF7F0E0),
+    muted: Color(0xFFA89F8B),
+    border: Color(0x14FFFFFF),
+    progressTrack: Color(0xFF3A352B),
+    completed: Color(0xFFA89F8B),
+    danger: Color(0xFFF07B5C),
+    dangerTint: Color(0x29F07B5C),
+    hero: Color(0xFF25221C),
+    field: Color(0xFF1E1B16),
   );
 
   /// Primary accent, and the text/icon colour that sits on top of it.
@@ -72,6 +75,14 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Background of the daily progress card, which is dark in both themes.
   final Color hero;
 
+  /// Fill of text fields and other inset controls.
+  final Color field;
+
+  /// The amber that floods every screen header, and the ink used on it.
+  /// Identical in both themes so the brand reads the same everywhere.
+  static const header = Color(0xFFF4B618);
+  static const onHeader = Color(0xFF17140F);
+
   @override
   AppColors copyWith({
     Color? accent,
@@ -87,6 +98,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? danger,
     Color? dangerTint,
     Color? hero,
+    Color? field,
   }) {
     return AppColors(
       accent: accent ?? this.accent,
@@ -102,6 +114,7 @@ class AppColors extends ThemeExtension<AppColors> {
       danger: danger ?? this.danger,
       dangerTint: dangerTint ?? this.dangerTint,
       hero: hero ?? this.hero,
+      field: field ?? this.field,
     );
   }
 
@@ -123,6 +136,7 @@ class AppColors extends ThemeExtension<AppColors> {
       danger: mix(danger, other.danger),
       dangerTint: mix(dangerTint, other.dangerTint),
       hero: mix(hero, other.hero),
+      field: mix(field, other.field),
     );
   }
 }

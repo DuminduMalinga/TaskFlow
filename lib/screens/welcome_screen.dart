@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import '../widgets/donezo_logo.dart';
+import '../widgets/organic_header.dart';
 
 /// First-run introduction. [onContinue] is called from either action.
 class WelcomeScreen extends StatelessWidget {
@@ -16,68 +16,80 @@ class WelcomeScreen extends StatelessWidget {
     final colors = context.colors;
     return Scaffold(
       backgroundColor: colors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  const DonezoLogo(size: 40),
-                  const SizedBox(width: 12),
-                  DonezoWordmark(color: colors.text, fontSize: 24),
-                ],
-              ),
-              const Expanded(child: _Illustration()),
-              Text(
-                'Your day.\nYour way.',
-                style: TextStyle(
-                  color: colors.text,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                  height: 1.15,
-                  letterSpacing: -0.8,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Plan less in your head. Get more done in real life.',
-                style: TextStyle(color: colors.muted, fontSize: 16, height: 1.5),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  onPressed: onContinue,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colors.accent,
-                    foregroundColor: colors.onAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  child: const Text('Get Started'),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton(
-                  onPressed: onContinue,
-                  style: TextButton.styleFrom(foregroundColor: colors.muted),
-                  child: const Text('I already know my way around'),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+      body: Column(
+        children: [
+          const OrganicHeader(
+            eyebrow: 'Welcome to',
+            title: 'Donezo',
+            titleSize: 40,
+            subtitle: 'Capture it. Do it. Done.',
+            minHeight: 170,
           ),
-        ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(child: _Illustration()),
+                    Text(
+                      'Your day.\nYour way.',
+                      style: TextStyle(
+                        color: colors.text,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        height: 1.15,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Plan less in your head. Get more done in real life.',
+                      style: TextStyle(
+                        color: colors.muted,
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: FilledButton(
+                        onPressed: onContinue,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colors.accent,
+                          foregroundColor: colors.onAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        child: const Text('Get Started'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: TextButton(
+                        onPressed: onContinue,
+                        style: TextButton.styleFrom(
+                          foregroundColor: colors.muted,
+                        ),
+                        child: const Text('I already know my way around'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -180,9 +192,7 @@ class _TaskCard extends StatelessWidget {
                   : null,
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(spacing: 8, children: [line(1), line(0.6)]),
-            ),
+            Expanded(child: Column(spacing: 8, children: [line(1), line(0.6)])),
           ],
         ),
       ),
